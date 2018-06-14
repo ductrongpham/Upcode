@@ -913,7 +913,7 @@ int main()
 	struct sockaddr_in serv;
 	serv.sin_family = AF_INET;
 	serv.sin_port = htons(2222);
-	serv.sin_addr.s_addr = inet_addr("192.168.1.188");
+	serv.sin_addr.s_addr = inet_addr("192.168.1.107");
 	socklen_t m_server = sizeof(serv);
 	struct PointCenter pointCenter;
 #endif
