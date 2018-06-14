@@ -59,9 +59,8 @@ void controlCursor(int &flagC, int & flagLC, int xx, int yy, int xcu, int ycu, H
 	if (hg1.isHand && hg1.mostFrequentFingerNumber == 1){
 		int dx = xx - xcu;
 		int dy = yy - ycu;
-		if (!(abs(dx) <= 2 && abs(dy) <= 2))
-			MouseMove(4 * dx, 4 * dy);
-
+		if (!(abs(dx) <= 3 && abs(dy) <= 3))
+			MouseMove(3 * dx, 3 * dy);
 		//reset flag click
 		flagC = 0;
 	}
@@ -135,7 +134,7 @@ Mat returnImagePrev(VideoCapture cap){
 	return framePrev;
 }
 
-Mat returnImage(Mat frameCurrent, Mat framePrev){
+Mat returnSubBackgroundStatic(Mat frameCurrent, Mat framePrev){
 
 	cv::Mat diffImage;
 	Mat anhGrab;
@@ -163,7 +162,7 @@ Mat returnImage(Mat frameCurrent, Mat framePrev){
 	//adaptiveThreshold(foregroundMask, foregroundMask, 255,/* ADAPTIVE_THRESH_MEAN_C*/ ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 15, 0);
 	GaussianBlur(foregroundMask, foregroundMask, Size(11, 11), 3.5, 3.5, 4);
 	//bilateralFilter
-	threshold(foregroundMask, foregroundMask, threshold_bar, 255, THRESH_BINARY);
+	threshold(foregroundMask, foregroundMask, threshold_bar_static, 255, THRESH_BINARY);
 	cv::erode(foregroundMask, foregroundMask, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
 	cv::dilate(foregroundMask, foregroundMask, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
 	cv::dilate(foregroundMask, foregroundMask, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
@@ -207,6 +206,28 @@ Mat returnImage(Mat frameCurrent, Mat framePrev){
 	//frameCurrent.copyTo(anhGrab, imgThresh);
 	/////////////////////////////////////////////////////////////////////////////////////////////
 	return anhGrab;
+}
+
+Mat returnSubBackgroundDynamic(Ptr<BackgroundSubtractor> bg_model, Mat img){
+	Mat foregroundMask, backgroundImage, foregroundImg;
+	if (foregroundMask.empty()){
+		foregroundMask.create(img.size(), img.type());
+	}
+	// compute foreground mask 8 bit image
+	// -1 is parameter that chose automatically your learning rate
+	bg_model->apply(img, foregroundMask, true ? -1 : 0);
+	// smooth the mask to reduce noise in image
+	GaussianBlur(foregroundMask, foregroundMask, Size(11, 11), 3.5, 3.5);
+	// threshold mask to saturate at black and white values
+	threshold(foregroundMask, foregroundMask, threshold_bar_dynamic, 255, THRESH_BINARY);
+	cv::erode(foregroundMask, foregroundMask, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+	cv::dilate(foregroundMask, foregroundMask, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+	cv::dilate(foregroundMask, foregroundMask, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+	cv::erode(foregroundMask, foregroundMask, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+	//Background Subtractor
+	foregroundImg = Scalar::all(0);
+	img.copyTo(foregroundImg, foregroundMask);
+	return foregroundImg;
 }
 
 void drawHist(String name, Mat src){
@@ -457,14 +478,16 @@ void inittrackbar(){
 		c_lower[i][2] = 15;
 		c_upper[i][2] = 255;
 	}
-	threshold_bar = 150;
-	createTrackbar("H-Upper", "trackbar", &c_upper[0][0], 180);
-	createTrackbar("H-Lower", "trackbar", &c_lower[0][0], 180);
-	createTrackbar("S-Upper", "trackbar", &c_upper[0][1], 255);
-	createTrackbar("S-Lower", "trackbar", &c_lower[0][1], 255);
-	createTrackbar("L-Upper", "trackbar", &c_upper[0][2], 255);
-	createTrackbar("L-Lower", "trackbar", &c_lower[0][2], 255);
-	createTrackbar("Threshsold", "trackbar", &threshold_bar, 255);
+	threshold_bar_static = 150;
+	threshold_bar_dynamic = 10;
+	createTrackbar("H-Upper", "trackbar_n", &c_upper[0][0], 180);
+	createTrackbar("H-Lower", "trackbar_n", &c_lower[0][0], 180);
+	createTrackbar("S-Upper", "trackbar_n", &c_upper[0][1], 255);
+	createTrackbar("S-Lower", "trackbar_n", &c_lower[0][1], 255);
+	createTrackbar("L-Upper", "trackbar_n", &c_upper[0][2], 255);
+	createTrackbar("L-Lower", "trackbar_n", &c_lower[0][2], 255);
+	createTrackbar("Threshsold static", "trackbar_n", &threshold_bar_static, 255);
+	createTrackbar("Threshsold dynamic", "trackbar_n", &threshold_bar_dynamic, 255);
 }
 //tiêu chuẩn màu sắc
 void normalizeColors(){
@@ -664,7 +687,7 @@ void makeContours(Mat src, Mat bw, Shape * sh, HandGesture *hg1){
 	bw.copyTo(aBw);
 
 	GaussianBlur(aBw, aBw, Size(11, 11), 3.5, 3.5);
-	threshold(aBw, aBw, threshold_bar, 255, THRESH_BINARY);
+	threshold(aBw, aBw, threshold_bar_static, 255, THRESH_BINARY);
 	cv::erode(aBw, aBw, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
 	cv::dilate(aBw, aBw, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
 	cv::dilate(aBw, aBw, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
@@ -770,7 +793,6 @@ void handDect(Mat &m){
 	vector<Rect> palm;
 	Palm.load("Hand.Cascade.1.xml");
 	pyrDown(m1, m1);
-	pyrDown(m1, m1);
 	Palm.detectMultiScale(m1, palm, 1.1, 3, 0 | CV_HAAR_FIND_BIGGEST_OBJECT, Size(30, 30));
 	Point sh;
 	if (palm.size()){
@@ -778,7 +800,6 @@ void handDect(Mat &m){
 		sh.y = (palm[0].br().y + palm[0].tl().y) / 2;
 		putText(m, "Hand", Point(sh), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
 	}
-		
 }
 
 // camshift
@@ -890,10 +911,46 @@ void camShiftDemo(Mat &src, Mat &imageHLS, Mat& maskHLS,Mat &hue,Mat &hist, cons
 //	return result;
 //}
 
+//Hàm trả về tỉ lệ sai lệch giữa ảnh nền và ảnh hiện tại (tỉ lệ phần trăm càng cao độ sai lệch càng ít)
+float returnPercentDiff(Mat src_base, Mat src_test1){
+	float per = 0;
+	Mat hsv_base, hsv_test1;
 
+	/// Convert to HSV
+	cvtColor(src_base, hsv_base, COLOR_BGR2HSV);
+	cvtColor(src_test1, hsv_test1, COLOR_BGR2HSV);
+
+	/// Using 50 bins for hue and 60 for saturation
+	int h_bins = 50; int s_bins = 60;
+	int histSize[] = { h_bins, s_bins };
+
+	// hue varies from 0 to 179, saturation from 0 to 255
+	float h_ranges[] = { 0, 180 };
+	float s_ranges[] = { 0, 256 };
+
+	const float* ranges[] = { h_ranges, s_ranges };
+
+	// Use the o-th and 1-st channels
+	int channels[] = { 0, 1 };
+
+	/// Histograms
+	MatND hist_base;
+	MatND hist_test1;
+	/// Calculate the histograms for the HSV images
+	calcHist(&hsv_base, 1, channels, Mat(), hist_base, 2, histSize, ranges, true, false);
+	normalize(hist_base, hist_base, 0, 1, NORM_MINMAX, -1, Mat());
+
+	calcHist(&hsv_test1, 1, channels, Mat(), hist_test1, 2, histSize, ranges, true, false);
+	normalize(hist_test1, hist_test1, 0, 1, NORM_MINMAX, -1, Mat());
+
+	/// Apply the histogram comparison methods
+	per = compareHist(hist_base, hist_test1, 0);
+	return per;
+}
 int main()
 {
 	MyImage m(0);
+	Ptr<BackgroundSubtractor> bg_model = createBackgroundSubtractorMOG2().dynamicCast<BackgroundSubtractor>();
 #ifdef __linux__
 	system("sudo modprobe bcm2835-v4l2");
 	wiringPiSetupGpio();
@@ -947,14 +1004,17 @@ int main()
 		destroyAllWindows();
 
 		//cac trang thai co
+		bool flag0 = false;
 		bool flag1 = false;
 		bool flag2 = false;
 		bool flag3 = false;
 		bool flag4 = false;
 		bool flag5 = false;
 		bool flag6 = false;
+		bool flag7 = false;
+		float per;
 		//Hien thi trackbar
-		namedWindow("trackbar", CV_WINDOW_AUTOSIZE);
+		namedWindow("trackbar_n", CV_WINDOW_KEEPRATIO);
 		namedWindow("HandDetect", CV_WINDOW_KEEPRATIO);
 		inittrackbar();
 
@@ -988,6 +1048,8 @@ int main()
 				break;
 			switch (c)
 			{
+			case '0':
+				flag0 = !flag0; break;
 			case '1': // loai bo background
 				flag1 = !flag1; break;
 			case '2': // lay lai background
@@ -996,10 +1058,12 @@ int main()
 				flag3 = !flag3; break;
 			case '4': // histogram
 				flag4 = !flag4; break;
-			case '5': // doi sang ko gian mau YCrCb
+			case '5': // hien thi % sai khac giua background va anh hien tai
 				flag5 = !flag5; break;
 			case '6': // dieu khien chuot
 				flag6 = !flag6; break;
+			case '7':
+				flag7 = !flag7; break;
 			case 'q': // thoat khoi chuong trinh
 #ifdef __linux__
 				cout << "program finished clear GPIO" << endl;
@@ -1023,9 +1087,12 @@ int main()
 			m.cap >> m.src;
 			convertCamera(m.src);
 			m.src.copyTo(m.srcLR);
+			if (flag0){
+				m.srcLR = returnSubBackgroundDynamic(bg_model,m.src);
+			}
 
 			if (flag1){
-				m.srcLR = returnImage(m.src, framePrev);
+				m.srcLR = returnSubBackgroundStatic(m.src, framePrev);
 			}
 			if (flag2){
 				framePrev = returnImagePrev(m.cap);
@@ -1048,28 +1115,26 @@ int main()
 				cvDestroyWindow("Histogram");
 			}
 
-			//if (flag5){
-			//	/////////////////////////////////////////////
-			//	//imshow("Original Image", cameraFeed);
-			//	m.bw = mySkinDetector.getSkin(m.srcLR);
-			//	imshow("binary ycrcb", m.bw);
-			//	/////////////////////////////////////////////
-			//}
-			//else{
-			//	cvDestroyWindow("binary ycrcb");
-				pyrDown(m.srcLR, m.srcLR);
-				blur(m.srcLR, m.srcLR, Size(3, 3));
-				//chuyển đổi màu của ảnh đó sang HLS
-				cvtColor(m.srcLR, m.srcLR, ORIGCOL2COL);
-				//tạo ảnh nhị phân hiển thị màu cùng với màu da
-				produceBinaries(&m);
-				pyrUp(m.bw, m.bw);
-				pyrUp(m.srcLR, m.srcLR);
-				camShiftDemo(m.src, m.srcLR, m.bw, hue, hist, phranges, hsize, trackWindow, flagCam);
-				//chuyển lại ảnh 1 nửa thành màu RGB lại
-				cvtColor(m.srcLR, m.srcLR, COL2ORIGCOL);
-				//imshow("Mask", m.bw);
-			//}
+			if (flag5){
+				per = returnPercentDiff(framePrev, m.src);
+				per = per * 100;
+				putText(m.src, to_string((int)per) + " %", Point(20, 20), fontFace, 1.5f, Scalar(41, 0, 223), 2);
+				if (per < 30.0f){
+					framePrev = returnImagePrev(m.cap);
+				}
+			}
+
+			pyrDown(m.srcLR, m.srcLR);
+			blur(m.srcLR, m.srcLR, Size(3, 3));
+			//chuyển đổi màu của ảnh đó sang HLS
+			cvtColor(m.srcLR, m.srcLR, ORIGCOL2COL);
+			//tạo ảnh nhị phân hiển thị màu cùng với màu da
+			produceBinaries(&m);
+			pyrUp(m.bw, m.bw);
+			pyrUp(m.srcLR, m.srcLR);
+			camShiftDemo(m.src, m.srcLR, m.bw, hue, hist, phranges, hsize, trackWindow, flagCam);
+			//chuyển lại ảnh 1 nửa thành màu RGB lại
+			cvtColor(m.srcLR, m.srcLR, COL2ORIGCOL);
 			makeContours(m.src, m.bw, &sh, &hg1);
 			/////////////////////////////////////////////////////////
 			//int startidx, endidx, faridx;//diem dau diem cuoi diem giua
@@ -1106,7 +1171,11 @@ int main()
 				//}
 #endif
 			}
-			//handDect(m.src);
+
+			if (flag7){
+				handDect(m.src);
+				cout << "hien thi ban tay" << endl;
+			}
 			//getOrientation(hg1.contours, m.src);
 			showWindows(m.src, m.bw);
 		}

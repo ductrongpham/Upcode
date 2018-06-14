@@ -68,7 +68,8 @@ int square_len; //kich thước của 1 ROI
 int avgColor[NSAMPLES][3]; // chưa lần lượt bộ 3 tham số HLS của từng ô mẫu màu
 int c_lower[NSAMPLES][3]; //chỉ số lơn nhất lần lượt của các tham số HLS	
 int c_upper[NSAMPLES][3]; //chỉ số tối thiểu lần lượt của các tham số HLS
-int threshold_bar = 0;
+int threshold_bar_static = 0;
+int threshold_bar_dynamic = 0;
 vector <MyRoi> roi;
 
 //chờ nhận mẫu màu từ lòng bàn tay
@@ -118,7 +119,8 @@ string bool2string(bool tf);
 void CallBackFunc(int event, int x, int y, int flags, void* userdata);
 
 //hàm xử lí loại bỏ background
-Mat returnImage(Mat frameCurrent, Mat framePrev);
+Mat returnSubBackgroundStatic(Mat frameCurrent, Mat framePrev);
+Mat returnSubBackgroundDynamic(Ptr<BackgroundSubtractor> bg_model, Mat img);
 
 Mat returnImagePrev(MyImage *m);
 
