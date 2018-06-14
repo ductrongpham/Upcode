@@ -621,18 +621,18 @@ void analyContour(Mat src, Shape *sh, int idxSh, HandGesture *hg){
 
 	hg->eliminateDefects();
 	///////////////////////////////////////////////////////////////
-	int startidx, endidx, faridx;//diem dau diem cuoi diem giua
-	vector<Vec4i>::iterator d = hg->defects.begin();
-	while (d != hg->defects.end()) {
-		Vec4i& v = (*d);
-		startidx = v[0];	Point ptStart(hg->contours[startidx]);
-		endidx = v[1];		Point ptEnd(hg->contours[endidx]);
-		faridx = v[2];		Point ptFar(hg->contours[faridx]);
-		circle(src, ptStart, 1, Scalar(200, 200, 0), 2);
-		circle(src, ptFar, 1, Scalar(0, 200, 0), 2);
-		circle(src, ptEnd, 1, Scalar(0, 0, 200), 2);
-		d++;
-	}
+	//int startidx, endidx, faridx;//diem dau diem cuoi diem giua
+	//vector<Vec4i>::iterator d = hg->defects.begin();
+	//while (d != hg->defects.end()) {
+	//	Vec4i& v = (*d);
+	//	startidx = v[0];	Point ptStart(hg->contours[startidx]);
+	//	endidx = v[1];		Point ptEnd(hg->contours[endidx]);
+	//	faridx = v[2];		Point ptFar(hg->contours[faridx]);
+	//	circle(src, ptStart, 1, Scalar(200, 200, 0), 2);
+	//	circle(src, ptFar, 1, Scalar(0, 200, 0), 2);
+	//	circle(src, ptEnd, 1, Scalar(0, 0, 200), 2);
+	//	d++;
+	//}
 	///////////////////////////////////////////////////////////////
 	bool ishand = hg->detectIfHand(src);
 
@@ -913,7 +913,7 @@ int main()
 	struct sockaddr_in serv;
 	serv.sin_family = AF_INET;
 	serv.sin_port = htons(2222);
-	serv.sin_addr.s_addr = inet_addr("192.168.1.188");
+	serv.sin_addr.s_addr = inet_addr("192.168.1.107");
 	socklen_t m_server = sizeof(serv);
 	struct PointCenter pointCenter;
 #endif
