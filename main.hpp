@@ -134,6 +134,8 @@ struct PointCenter
 	int x; //Tọa độ x
 	int y; //Tọa độ y
 	int fingerNum; //Số ngón tay
+	bool arrowKeyLeft;
+	bool arrowKeyRight;
 };
 void progressLinux(int argc, char *argv[]);
 #else

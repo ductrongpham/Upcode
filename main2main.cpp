@@ -9,6 +9,49 @@
 
 #ifdef __linux__
 #else
+void SetArrowLeft(BOOL bState)
+{
+	BYTE keyState[256];
+
+	GetKeyboardState((LPBYTE)&keyState);
+	if ((bState && !(keyState[VK_LEFT] & 1)) ||
+		(!bState && (keyState[VK_LEFT] & 1)))
+	{
+		// Simulate a key press
+		keybd_event(VK_LEFT,
+			0x45,
+			KEYEVENTF_EXTENDEDKEY | 0,
+			0);
+
+		// Simulate a key release
+		keybd_event(VK_LEFT,
+			0x45,
+			KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
+			0);
+	}
+}
+
+void SetArrowRight(BOOL bState)
+{
+	BYTE keyState[256];
+
+	GetKeyboardState((LPBYTE)&keyState);
+	if ((bState && !(keyState[VK_RIGHT] & 1)) ||
+		(!bState && (keyState[VK_RIGHT] & 1)))
+	{
+		// Simulate a key press
+		keybd_event(VK_RIGHT,
+			0x45,
+			KEYEVENTF_EXTENDEDKEY | 0,
+			0);
+
+		// Simulate a key release
+		keybd_event(VK_RIGHT,
+			0x45,
+			KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
+			0);
+	}
+}
 // Positive dx value means move right, Negative dx value means move left
 // Positive dy value means move down, Negative dy value means move right
 void MouseMove(int dx, int dy)
@@ -729,12 +772,11 @@ double getOrientation(vector<Point> &contours, Mat &img)
 		eigen_val[i] = pca_analysis.eigenvalues.at<double>(i, 0);
 	}
 	//Store the position of the object
-	//Point pos = Point(pca_analysis.mean.at<double>(0, 0),
-	//	pca_analysis.mean.at<double>(0, 1));
+	Point pos = Point(pca_analysis.mean.at<double>(0, 0),pca_analysis.mean.at<double>(0, 1));
 	//Draw the principal components
-	//circle(img, pos, 3, CV_RGB(255, 0, 255), 2);
-	//line(img, pos, pos + 0.02 * Point(eigen_vecs[0].x * eigen_val[0], eigen_vecs[0].y * eigen_val[0]), CV_RGB(255, 255, 0));
-	//line(img, pos, pos + 0.02 * Point(eigen_vecs[1].x * eigen_val[1], eigen_vecs[1].y * eigen_val[1]), CV_RGB(0, 255, 255));
+	circle(img, pos, 3, CV_RGB(255, 0, 255), 2);
+	line(img, pos, pos + 0.02 * Point(eigen_vecs[0].x * eigen_val[0], eigen_vecs[0].y * eigen_val[0]), CV_RGB(255, 255, 0));
+	line(img, pos, pos + 0.02 * Point(eigen_vecs[1].x * eigen_val[1], eigen_vecs[1].y * eigen_val[1]), CV_RGB(0, 255, 255));
 	//cout << "goc " << atan2(eigen_vecs[0].y, eigen_vecs[0].x) << endl;
 	return atan2(eigen_vecs[0].y, eigen_vecs[0].x);
 }
@@ -836,50 +878,6 @@ float returnPercentDiff(Mat src_base, Mat src_test1){
 	return per;
 }
 
-void SetArrowLeft(BOOL bState)
-{
-	BYTE keyState[256];
-
-	GetKeyboardState((LPBYTE)&keyState);
-	if ((bState && !(keyState[VK_LEFT] & 1)) ||
-		(!bState && (keyState[VK_LEFT] & 1)))
-	{
-		// Simulate a key press
-		keybd_event(VK_LEFT,
-			0x45,
-			KEYEVENTF_EXTENDEDKEY | 0,
-			0);
-
-		// Simulate a key release
-		keybd_event(VK_LEFT,
-			0x45,
-			KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
-			0);
-	}
-}
-
-void SetArrowRight(BOOL bState)
-{
-	BYTE keyState[256];
-
-	GetKeyboardState((LPBYTE)&keyState);
-	if ((bState && !(keyState[VK_RIGHT] & 1)) ||
-		(!bState && (keyState[VK_RIGHT] & 1)))
-	{
-		// Simulate a key press
-		keybd_event(VK_RIGHT,
-			0x45,
-			KEYEVENTF_EXTENDEDKEY | 0,
-			0);
-
-		// Simulate a key release
-		keybd_event(VK_RIGHT,
-			0x45,
-			KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
-			0);
-	}
-}
-
 int main()
 {
 	MyImage m(0);
@@ -907,7 +905,11 @@ int main()
 	socklen_t m_server = sizeof(serv);
 	struct PointCenter pointCenter;
 #endif
+	int frame_width = m.cap.get(CV_CAP_PROP_FRAME_WIDTH);
+	int frame_height = m.cap.get(CV_CAP_PROP_FRAME_HEIGHT);
 
+	// Define the codec and create VideoWriter object.The output is stored in 'outcpp.avi' file. 
+	VideoWriter video("outcpp.avi", CV_FOURCC('M', 'J', 'P', 'G'), 10, Size(frame_width, frame_height));
 	while (1){
 
 		square_len = 15;
@@ -926,6 +928,7 @@ int main()
 		flagOn = 0;
 		//chờ nhận mẫu màu từ lòng bàn tay
 		m.cap >> m.src;
+
 		waitForPalmCover(&m);
 
 		//tinh toan HLS
@@ -1073,20 +1076,25 @@ int main()
 			cvtColor(m.srcLR, m.srcLR, COL2ORIGCOL);
 			makeContours(m.src, m.bw, &sh, &hg1);
 
+#ifdef __linux__
+			pointCenter.arrowKeyLeft = false;
+			pointCenter.arrowKeyRight = false;
+			pointCenter.x = -1;
+			pointCenter.y = -1;
+			pointCenter.fingerNum = -1;
+#endif
+
 			if (flag6){
 #ifdef __linux__
 				pointCenter.x = hg1.getPointCenter().x;
 				pointCenter.y = hg1.getPointCenter().y;
 				pointCenter.fingerNum = hg1.mostFrequentFingerNumber;
-				sendto(sockfd, (char*)&pointCenter, sizeof(pointCenter), 0, (struct sockaddr *)&serv, m_server);
-				memset(&pointCenter, 0, sizeof(pointCenter));
 #else
 				xx = hg1.getPointCenter().x;
 				yy = hg1.getPointCenter().y;
 				controlCursor(flagC, flagLC, xx, yy, xcu, ycu, hg1);
 				xcu = xx;
 				ycu = yy;
-
 #endif
 			}
 			
@@ -1097,23 +1105,38 @@ int main()
 					pressArrowKeyLeft++;
 					pressArrowKeyRight = 0;
 					if (pressArrowKeyLeft == 15){
+#ifdef __linux__
+						pointCenter.arrowKeyLeft = true;
+#else
 						SetArrowLeft(true);
+#endif
 						cout << "press left" << endl;
 						pressArrowKeyLeft = 0;
 					}
+
 				}
 				if (rl > 1.9){
 					putText(m.src, "-->", Point(250, 220), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
 					pressArrowKeyRight++;
 					pressArrowKeyLeft = 0;
 					if (pressArrowKeyRight == 15){
+#ifdef __linux__
+						pointCenter.arrowKeyRight = true;
+#else
 						SetArrowRight(true);
+#endif
 						cout << "press right" << endl;
 						pressArrowKeyRight = 0;
 					}
 				}
 			}
 
+#ifdef __linux__
+			if(flag7 || flag6){
+				sendto(sockfd, (char*)&pointCenter, sizeof(pointCenter), 0, (struct sockaddr *)&serv, m_server);
+			}
+			memset(&pointCenter, 0, sizeof(pointCenter));
+#endif
 			showWindows(m.src, m.bw);
 		}
 
