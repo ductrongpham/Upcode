@@ -14,7 +14,7 @@ MyImage::MyImage(){
 
 MyImage::MyImage(int webCamera){
 	cameraSrc = webCamera;
-	cap = VideoCapture(webCamera);
+	cap = VideoCapture("video.avi");
 	cap.set(CV_CAP_PROP_FRAME_WIDTH, 320);
 	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
 #ifdef __linux__
