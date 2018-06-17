@@ -915,7 +915,7 @@ int main()
 	int frame_height = m.cap.get(CV_CAP_PROP_FRAME_HEIGHT);
 
 	// Define the codec and create VideoWriter object.The output is stored in 'outcpp.avi' file. 
-	VideoWriter video("outcpp.avi", CV_FOURCC('M', 'J', 'P', 'G'), 10, Size(frame_width, frame_height));
+	//VideoWriter video("outcpp.avi", CV_FOURCC('M', 'J', 'P', 'G'), 10, Size(frame_width, frame_height));
 	while (1){
 		square_len = 15;
 		Shape sh;
