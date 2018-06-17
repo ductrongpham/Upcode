@@ -8,6 +8,14 @@
 #include <ctype.h>
 
 #ifdef __linux__
+#include <sys/time.h>
+typedef unsigned long long timestamp_t;
+static timestamp_t get_timestamp()
+{
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
+}
 #else
 void SetArrowLeft(BOOL bState)
 {
@@ -622,26 +630,8 @@ int* findBiggestContour(vector<vector<Point> > contours){
 	return index;
 }
 
-void cropHand(Mat imageHand, Rect trackBox){
-	Size rect_size = trackBox.size();
-	Point2f centerBox((trackBox.tl().x + trackBox.br().x) / 2, (trackBox.tl().y + trackBox.br().y) / 2);
-	Mat M = getRotationMatrix2D(centerBox, 0, 1.0);
-	Mat rotatedMask;
-	Mat croppedMask;
-	namedWindow("Hand Image", CV_WINDOW_AUTOSIZE);
-	warpAffine(imageHand, rotatedMask, M, imageHand.size(), INTER_CUBIC);
-	getRectSubPix(rotatedMask, rect_size, centerBox, croppedMask);
-	imshow("Hand Image", croppedMask);
-}
-
 void analyContour(Mat src, Shape *sh, int idxSh, HandGesture *hg){
 	Rect bRectSh = boundingRect(Mat(sh->contourShape[idxSh]));
-	/*if (bRectSh.area() > 0){
-		cropHand(src, bRectSh);
-	}
-	else{
-		destroyWindow("Hand Image");
-	}*/
 	// Find the convex hull object for each contour
 	//Tìm phần vỏ lồi của một điểm đặt.
 	//tìm tập hợp hullPoint
@@ -781,20 +771,36 @@ double getOrientation(vector<Point> &contours, Mat &img)
 	return atan2(eigen_vecs[0].y, eigen_vecs[0].x);
 }
 
-void handDect(Mat &m){
+bool handDect(Mat &m){
 	Mat m1;
 	m.copyTo(m1);
 	CascadeClassifier Palm;
 	vector<Rect> palm;
 	Palm.load("Hand.Cascade.1.xml");
-	pyrDown(m1, m1);
 	Palm.detectMultiScale(m1, palm, 1.1, 3, 0 | CV_HAAR_FIND_BIGGEST_OBJECT, Size(30, 30));
 	Point sh;
 	if (palm.size()){
-		sh.x = (palm[0].br().x + palm[0].tl().x) / 2;
-		sh.y = (palm[0].br().y + palm[0].tl().y) / 2;
-		putText(m, "Hand", Point(sh), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
+		rectangle(m, palm[0].br(), palm[0].tl(), Scalar(255,255,255));
+		return true;
 	}
+	return false;
+}
+
+Mat cropHand(Mat &imageHand, Rect trackBox){
+	Size rect_size = trackBox.size();
+	Point2f centerBox((trackBox.tl().x + trackBox.br().x) / 2, (trackBox.tl().y + trackBox.br().y) / 2);
+	Mat M = getRotationMatrix2D(centerBox, 0, 1.0);
+	Mat rotatedMask;
+	Mat croppedMask;
+	//namedWindow("Hand Image", CV_WINDOW_AUTOSIZE);
+	warpAffine(imageHand, rotatedMask, M, imageHand.size(), INTER_CUBIC);
+	getRectSubPix(rotatedMask, rect_size, centerBox, croppedMask);
+	//bool isHand = handDect(croppedMask);
+	//if (isHand){
+	//	putText(imageHand,"isHand", Point(20, 20), fontFace, 1.5f, Scalar(41, 0, 223), 2);
+	//}
+	//imshow("Hand Image", croppedMask);
+	return croppedMask;
 }
 
 // camshift
@@ -833,12 +839,12 @@ void camShiftDemo(Mat &src, Mat &imageHLS, Mat& maskHLS, Mat &hue, Mat &hist, co
 	//}
 
 	rectangle(src, trackWindow, Scalar(216, 220, 15), 2, 8);
-	//if (window.area() > 0){
-	//	//cropHand(src, window);
-	//}
-	//else{
-	//	destroyWindow("Hand Image");
-	//}
+	if (window.area() > 0){
+		cropHand(src, window);
+	}
+	else{
+		destroyWindow("Hand Image");
+	}
 }
 
 //Hàm trả về tỉ lệ sai lệch giữa ảnh nền và ảnh hiện tại (tỉ lệ phần trăm càng cao độ sai lệch càng ít)
@@ -864,8 +870,8 @@ float returnPercentDiff(Mat src_base, Mat src_test1){
 	int channels[] = { 0, 1 };
 
 	/// Histograms
-	MatND hist_base;
-	MatND hist_test1;
+	Mat hist_base;
+	Mat hist_test1;
 	/// Calculate the histograms for the HSV images
 	calcHist(&hsv_base, 1, channels, Mat(), hist_base, 2, histSize, ranges, true, false);
 	normalize(hist_base, hist_base, 0, 1, NORM_MINMAX, -1, Mat());
@@ -911,7 +917,6 @@ int main()
 	// Define the codec and create VideoWriter object.The output is stored in 'outcpp.avi' file. 
 	VideoWriter video("outcpp.avi", CV_FOURCC('M', 'J', 'P', 'G'), 10, Size(frame_width, frame_height));
 	while (1){
-
 		square_len = 15;
 		Shape sh;
 		HandGesture hg1;
@@ -973,8 +978,12 @@ int main()
 		mySelection &= Rect(0, 0, 320, 240);
 		int pressArrowKeyLeft = 0;
 		int pressArrowKeyRight = 0;
+
 		////////////////////////////////////////////////
 		while (1){
+//#ifdef __linux__
+//			timestamp_t t0 = get_timestamp();
+//#endif
 			hg1.frameNumber++;
 			//0 ==> show histogram chua can bang
 			//1 ==> loai bo background
@@ -1104,7 +1113,7 @@ int main()
 					putText(m.src, "<--", Point(250, 220), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
 					pressArrowKeyLeft++;
 					pressArrowKeyRight = 0;
-					if (pressArrowKeyLeft == 15){
+					if (pressArrowKeyLeft == 10){
 #ifdef __linux__
 						pointCenter.arrowKeyLeft = true;
 #else
@@ -1112,6 +1121,7 @@ int main()
 #endif
 						cout << "press left" << endl;
 						pressArrowKeyLeft = 0;
+						SetArrowLeft(false);
 					}
 
 				}
@@ -1119,7 +1129,7 @@ int main()
 					putText(m.src, "-->", Point(250, 220), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
 					pressArrowKeyRight++;
 					pressArrowKeyLeft = 0;
-					if (pressArrowKeyRight == 15){
+					if (pressArrowKeyRight == 10){
 #ifdef __linux__
 						pointCenter.arrowKeyRight = true;
 #else
@@ -1127,6 +1137,7 @@ int main()
 #endif
 						cout << "press right" << endl;
 						pressArrowKeyRight = 0;
+						SetArrowRight(false);
 					}
 				}
 			}
@@ -1138,11 +1149,16 @@ int main()
 			memset(&pointCenter, 0, sizeof(pointCenter));
 #endif
 			showWindows(m.src, m.bw);
+//#ifdef __linux__
+//			timestamp_t t1 = get_timestamp();
+//			double secs = (t1 - t0) / 1000000.0L;
+//			cout << "progressing time of frame in linux (s) " << secs << endl;
+//#endif
 		}
 
 		for (int i = 0; i < NSAMPLES; i++){
-			c_lower[i][0] = 20;
-			c_upper[i][0] = 100;
+			c_lower[i][0] = 30;
+			c_upper[i][0] = 180;
 			c_lower[i][1] = 30;
 			c_upper[i][1] = 255;
 			c_lower[i][2] = 15;
