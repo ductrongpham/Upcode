@@ -94,19 +94,11 @@ Player::Player(QObject *parent)
 }
 
 bool Player::loadVideo(String filename) {
-
-    if (capture.isOpened())
-    {
-        frameRate = (int) capture.get(CV_CAP_PROP_FPS);
-        return true;
-    }
-    else
-        return false;
+    return false;
 }
 
 void Player::Play()
 {
-    capture.open(0);
     if (!isRunning()) {
         if (isStopped()){
             stop = false;
@@ -119,7 +111,6 @@ Player::~Player()
 {
     mutex.lock();
     stop = true;
-    capture.release();
     condition.wakeOne();
     mutex.unlock();
     wait();
@@ -769,10 +760,58 @@ double Player::getOrientation(vector<Point> &contours, Mat &img)
     //cout << "goc " << atan2(eigen_vecs[0].y, eigen_vecs[0].x) << endl;
     return atan2(eigen_vecs[0].y, eigen_vecs[0].x);
 }
+#ifdef __linux__
+void Player::sig_handler(int signo){
+    if (signo == SIGINT){
+        cout << "Quit program clear GPIO" << endl;
+        digitalWrite(LED1, 0);
+        digitalWrite(LED2, 0);
+        digitalWrite(LED3, 0);
+        digitalWrite(LED4, 0);
+        digitalWrite(LED5, 0);
+        digitalWrite(LED_NO, 0);
 
+        pinMode(LED1, INPUT);
+        pinMode(LED2, INPUT);
+        pinMode(LED3, INPUT);
+        pinMode(LED4, INPUT);
+        pinMode(LED5, INPUT);
+        pinMode(LED_NO, INPUT);
+    }
+}
+
+void Player::error(const char *msg)
+{
+    perror(msg);
+    exit(0);
+}
+#endif
 //___________________________________________________
 void Player::run()
 {
+#ifdef __linux__
+        system("sudo modprobe bcm2835-v4l2");
+        wiringPiSetupGpio();
+        pinMode(LED1, OUTPUT);
+        pinMode(LED2, OUTPUT);
+        pinMode(LED3, OUTPUT);
+        pinMode(LED4, OUTPUT);
+        pinMode(LED5, OUTPUT);
+        pinMode(LED_NO, OUTPUT);
+
+        if (signal(SIGINT, sig_handler) == SIG_ERR){
+            cout << "Not clear GPIO" << endl;
+        }
+
+        int sockfd;
+        sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        struct sockaddr_in serv;
+        serv.sin_family = AF_INET;
+        serv.sin_port = htons(2222);
+        serv.sin_addr.s_addr = inet_addr("192.168.1.107");
+        socklen_t m_server = sizeof(serv);
+        struct PointCenter pointCenter;
+#endif
     MyImage m(0);
     while(!stop){
         square_len = 15;

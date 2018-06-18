@@ -41,6 +41,8 @@ private slots:
 
     void on_start_process_btn_clicked();
 
+    void on_browser_btn_clicked();
+
 private:
     Ui::MainWindow *ui;
     Player* myPlayer;

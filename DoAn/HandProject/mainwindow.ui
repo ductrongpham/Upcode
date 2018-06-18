@@ -212,9 +212,7 @@ border-radius: 10px;</string>
     <property name="styleSheet">
      <string notr="true">border: 2px solid #222222;
 border-radius: 10px;
-QPushButton#change_bg_btn:pressed {
-     background-color: rgb(224, 0, 0);     
-}</string>
+</string>
     </property>
     <property name="text">
      <string>Change BG</string>
@@ -251,9 +249,6 @@ font: 75 20pt &quot;Times New Roman&quot;;</string>
     <property name="styleSheet">
      <string notr="true">border: 2px solid #222222;
 border-radius: 10px;
-QPushButton#browser_btn:pressed {
-     background-color: rgb(224, 0, 0);     
- }
 </string>
     </property>
     <property name="text">
@@ -272,9 +267,7 @@ QPushButton#browser_btn:pressed {
     <property name="styleSheet">
      <string notr="true">border: 2px solid #222222;
 border-radius: 10px;
- QPushButton#start_program_btn:pressed {
-     background-color: rgb(224, 0, 0);     
- }</string>
+</string>
     </property>
     <property name="text">
      <string>Start Program</string>
@@ -292,15 +285,13 @@ border-radius: 10px;
     <property name="styleSheet">
      <string notr="true">border: 2px solid #222222;
 border-radius: 10px;
-QPushButton#start_process_btn:pressed {
-     background-color: rgb(224, 0, 0);     
-}</string>
+</string>
     </property>
     <property name="text">
      <string>Start Process</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>340</x>
@@ -361,6 +352,7 @@ QPushButton#start_process_btn:pressed {
      </item>
     </layout>
    </widget>
+   <zorder>layoutWidget</zorder>
    <zorder>label_5</zorder>
    <zorder>img_lbl</zorder>
    <zorder>img_bg_lbl</zorder>
@@ -371,20 +363,11 @@ QPushButton#start_process_btn:pressed {
    <zorder>label</zorder>
    <zorder>ctrl_mouse_lbl</zorder>
    <zorder>label_3</zorder>
-   <zorder>sub_bg_cb</zorder>
-   <zorder>equal_his_cb</zorder>
-   <zorder>draw_his_cb</zorder>
-   <zorder>ctrl_mouse_cb</zorder>
-   <zorder>ctrl_arrow_cb</zorder>
-   <zorder>show_per_cb</zorder>
-   <zorder>change_bg_btn</zorder>
    <zorder>print_percent_lbl</zorder>
    <zorder>browser_btn</zorder>
    <zorder>start_program_btn</zorder>
    <zorder>start_process_btn</zorder>
    <zorder>change_bg_btn</zorder>
-   <zorder>label_6</zorder>
-   <zorder>label_6</zorder>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">

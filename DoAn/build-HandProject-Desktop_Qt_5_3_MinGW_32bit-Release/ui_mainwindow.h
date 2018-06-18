@@ -44,7 +44,7 @@ public:
     QPushButton *browser_btn;
     QPushButton *start_program_btn;
     QPushButton *start_process_btn;
-    QWidget *widget;
+    QWidget *layoutWidget;
     QVBoxLayout *verticalLayout;
     QLabel *label_6;
     QCheckBox *show_per_cb;
@@ -118,9 +118,7 @@ public:
         change_bg_btn->setGeometry(QRect(340, 280, 100, 31));
         change_bg_btn->setStyleSheet(QLatin1String("border: 2px solid #222222;\n"
 "border-radius: 10px;\n"
-"QPushButton#change_bg_btn:pressed {\n"
-"     background-color: rgb(224, 0, 0);     \n"
-"}"));
+""));
         print_percent_lbl = new QLabel(centralWidget);
         print_percent_lbl->setObjectName(QStringLiteral("print_percent_lbl"));
         print_percent_lbl->setGeometry(QRect(340, 30, 101, 51));
@@ -133,70 +131,64 @@ public:
         browser_btn->setGeometry(QRect(10, 280, 100, 31));
         browser_btn->setStyleSheet(QLatin1String("border: 2px solid #222222;\n"
 "border-radius: 10px;\n"
-"QPushButton#browser_btn:pressed {\n"
-"     background-color: rgb(224, 0, 0);     \n"
-" }\n"
 ""));
         start_program_btn = new QPushButton(centralWidget);
         start_program_btn->setObjectName(QStringLiteral("start_program_btn"));
         start_program_btn->setGeometry(QRect(120, 280, 100, 31));
         start_program_btn->setStyleSheet(QLatin1String("border: 2px solid #222222;\n"
 "border-radius: 10px;\n"
-" QPushButton#start_program_btn:pressed {\n"
-"     background-color: rgb(224, 0, 0);     \n"
-" }"));
+""));
         start_process_btn = new QPushButton(centralWidget);
         start_process_btn->setObjectName(QStringLiteral("start_process_btn"));
         start_process_btn->setGeometry(QRect(230, 280, 100, 31));
         start_process_btn->setStyleSheet(QLatin1String("border: 2px solid #222222;\n"
 "border-radius: 10px;\n"
-"QPushButton#start_process_btn:pressed {\n"
-"     background-color: rgb(224, 0, 0);     \n"
-"}"));
-        widget = new QWidget(centralWidget);
-        widget->setObjectName(QStringLiteral("widget"));
-        widget->setGeometry(QRect(340, 110, 101, 161));
-        verticalLayout = new QVBoxLayout(widget);
+""));
+        layoutWidget = new QWidget(centralWidget);
+        layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
+        layoutWidget->setGeometry(QRect(340, 110, 101, 161));
+        verticalLayout = new QVBoxLayout(layoutWidget);
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         verticalLayout->setContentsMargins(0, 0, 0, 0);
-        label_6 = new QLabel(widget);
+        label_6 = new QLabel(layoutWidget);
         label_6->setObjectName(QStringLiteral("label_6"));
 
         verticalLayout->addWidget(label_6);
 
-        show_per_cb = new QCheckBox(widget);
+        show_per_cb = new QCheckBox(layoutWidget);
         show_per_cb->setObjectName(QStringLiteral("show_per_cb"));
 
         verticalLayout->addWidget(show_per_cb);
 
-        sub_bg_cb = new QCheckBox(widget);
+        sub_bg_cb = new QCheckBox(layoutWidget);
         sub_bg_cb->setObjectName(QStringLiteral("sub_bg_cb"));
 
         verticalLayout->addWidget(sub_bg_cb);
 
-        equal_his_cb = new QCheckBox(widget);
+        equal_his_cb = new QCheckBox(layoutWidget);
         equal_his_cb->setObjectName(QStringLiteral("equal_his_cb"));
 
         verticalLayout->addWidget(equal_his_cb);
 
-        draw_his_cb = new QCheckBox(widget);
+        draw_his_cb = new QCheckBox(layoutWidget);
         draw_his_cb->setObjectName(QStringLiteral("draw_his_cb"));
 
         verticalLayout->addWidget(draw_his_cb);
 
-        ctrl_mouse_cb = new QCheckBox(widget);
+        ctrl_mouse_cb = new QCheckBox(layoutWidget);
         ctrl_mouse_cb->setObjectName(QStringLiteral("ctrl_mouse_cb"));
 
         verticalLayout->addWidget(ctrl_mouse_cb);
 
-        ctrl_arrow_cb = new QCheckBox(widget);
+        ctrl_arrow_cb = new QCheckBox(layoutWidget);
         ctrl_arrow_cb->setObjectName(QStringLiteral("ctrl_arrow_cb"));
 
         verticalLayout->addWidget(ctrl_arrow_cb);
 
         MainWindow->setCentralWidget(centralWidget);
+        layoutWidget->raise();
         label_5->raise();
         img_lbl->raise();
         img_bg_lbl->raise();
@@ -207,20 +199,11 @@ public:
         label->raise();
         ctrl_mouse_lbl->raise();
         label_3->raise();
-        sub_bg_cb->raise();
-        equal_his_cb->raise();
-        draw_his_cb->raise();
-        ctrl_mouse_cb->raise();
-        ctrl_arrow_cb->raise();
-        show_per_cb->raise();
-        change_bg_btn->raise();
         print_percent_lbl->raise();
         browser_btn->raise();
         start_program_btn->raise();
         start_process_btn->raise();
         change_bg_btn->raise();
-        label_6->raise();
-        label_6->raise();
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
         MainWindow->addToolBar(Qt::TopToolBarArea, mainToolBar);

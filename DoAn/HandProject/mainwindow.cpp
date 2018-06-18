@@ -163,3 +163,8 @@ MainWindow::~MainWindow()
     delete myPlayer;
     delete ui;
 }
+
+void MainWindow::on_browser_btn_clicked()
+{
+
+}

@@ -72,7 +72,7 @@ class Player : public QThread
     QWaitCondition condition;
     Mat frame;
     int frameRate;
-    VideoCapture capture;
+//    VideoCapture capture;
     Mat RGBframe;
     QImage img;
  signals:
@@ -142,7 +142,6 @@ class Player : public QThread
      bool arrowKeyLeft;
      bool arrowKeyRight;
     };
-    void progressLinux(int argc, char *argv[]);
     #else
     void SetArrowLeft(BOOL bState);
     void SetArrowRight(BOOL bState);
