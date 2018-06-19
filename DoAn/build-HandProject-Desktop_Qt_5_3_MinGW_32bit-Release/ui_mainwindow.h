@@ -46,13 +46,14 @@ public:
     QPushButton *start_process_btn;
     QWidget *layoutWidget;
     QVBoxLayout *verticalLayout;
-    QLabel *label_6;
     QCheckBox *show_per_cb;
     QCheckBox *sub_bg_cb;
     QCheckBox *equal_his_cb;
     QCheckBox *draw_his_cb;
     QCheckBox *ctrl_mouse_cb;
     QCheckBox *ctrl_arrow_cb;
+    QLabel *hand_lbl;
+    QLabel *print_num_finger_lbl;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -60,9 +61,9 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
-        MainWindow->resize(840, 350);
-        MainWindow->setMinimumSize(QSize(840, 350));
-        MainWindow->setMaximumSize(QSize(840, 350));
+        MainWindow->resize(802, 344);
+        MainWindow->setMinimumSize(QSize(800, 300));
+        MainWindow->setMaximumSize(QSize(840, 450));
         MainWindow->setStyleSheet(QStringLiteral(""));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
@@ -82,7 +83,7 @@ public:
         img_bg_lbl->setStyleSheet(QStringLiteral("background-color: rgb(255, 255, 0);"));
         ctrl_arrow_lbl = new QLabel(centralWidget);
         ctrl_arrow_lbl->setObjectName(QStringLiteral("ctrl_arrow_lbl"));
-        ctrl_arrow_lbl->setGeometry(QRect(660, 190, 160, 120));
+        ctrl_arrow_lbl->setGeometry(QRect(630, 190, 160, 120));
         ctrl_arrow_lbl->setStyleSheet(QLatin1String("background-color: rgb(205, 190, 255);\n"
 "border: 2px solid #222222;\n"
 "border-radius: 10px;"));
@@ -92,7 +93,7 @@ public:
         label_2->setStyleSheet(QStringLiteral("font: 14pt \"Times New Roman\";"));
         label_4 = new QLabel(centralWidget);
         label_4->setObjectName(QStringLiteral("label_4"));
-        label_4->setGeometry(QRect(660, 160, 141, 20));
+        label_4->setGeometry(QRect(630, 160, 141, 20));
         label_4->setStyleSheet(QStringLiteral("font: 14pt \"Times New Roman\";"));
         img_his_lbl = new QLabel(centralWidget);
         img_his_lbl->setObjectName(QStringLiteral("img_his_lbl"));
@@ -104,14 +105,14 @@ public:
         label->setStyleSheet(QStringLiteral("font: 14pt \"Times New Roman\";"));
         ctrl_mouse_lbl = new QLabel(centralWidget);
         ctrl_mouse_lbl->setObjectName(QStringLiteral("ctrl_mouse_lbl"));
-        ctrl_mouse_lbl->setGeometry(QRect(660, 30, 160, 120));
+        ctrl_mouse_lbl->setGeometry(QRect(630, 30, 160, 120));
         ctrl_mouse_lbl->setStyleSheet(QLatin1String("alternate-background-color: rgb(255, 255, 255);\n"
 "background-color: rgb(103, 248, 255);\n"
 "border: 2px solid #222222;\n"
 "border-radius: 10px;"));
         label_3 = new QLabel(centralWidget);
         label_3->setObjectName(QStringLiteral("label_3"));
-        label_3->setGeometry(QRect(660, 0, 161, 20));
+        label_3->setGeometry(QRect(630, 0, 161, 20));
         label_3->setStyleSheet(QStringLiteral("font: 14pt \"Times New Roman\";"));
         change_bg_btn = new QPushButton(centralWidget);
         change_bg_btn->setObjectName(QStringLiteral("change_bg_btn"));
@@ -121,11 +122,12 @@ public:
 ""));
         print_percent_lbl = new QLabel(centralWidget);
         print_percent_lbl->setObjectName(QStringLiteral("print_percent_lbl"));
-        print_percent_lbl->setGeometry(QRect(340, 30, 101, 51));
+        print_percent_lbl->setGeometry(QRect(340, 90, 101, 41));
         print_percent_lbl->setStyleSheet(QLatin1String("background-color: rgb(255, 217, 24);\n"
 "border: 2px solid #222222;\n"
 "border-radius: 10px;\n"
-"font: 75 20pt \"Times New Roman\";"));
+"font: 75 15pt \"Times New Roman\";"));
+        print_percent_lbl->setAlignment(Qt::AlignCenter);
         browser_btn = new QPushButton(centralWidget);
         browser_btn->setObjectName(QStringLiteral("browser_btn"));
         browser_btn->setGeometry(QRect(10, 280, 100, 31));
@@ -146,17 +148,12 @@ public:
 ""));
         layoutWidget = new QWidget(centralWidget);
         layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
-        layoutWidget->setGeometry(QRect(340, 110, 101, 161));
+        layoutWidget->setGeometry(QRect(340, 133, 101, 141));
         verticalLayout = new QVBoxLayout(layoutWidget);
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         verticalLayout->setContentsMargins(0, 0, 0, 0);
-        label_6 = new QLabel(layoutWidget);
-        label_6->setObjectName(QStringLiteral("label_6"));
-
-        verticalLayout->addWidget(label_6);
-
         show_per_cb = new QCheckBox(layoutWidget);
         show_per_cb->setObjectName(QStringLiteral("show_per_cb"));
 
@@ -187,6 +184,20 @@ public:
 
         verticalLayout->addWidget(ctrl_arrow_cb);
 
+        hand_lbl = new QLabel(centralWidget);
+        hand_lbl->setObjectName(QStringLiteral("hand_lbl"));
+        hand_lbl->setGeometry(QRect(630, 280, 161, 31));
+        hand_lbl->setStyleSheet(QLatin1String("font: 75 14pt \".VnBlackH\";\n"
+"color: rgb(255, 14, 14);"));
+        hand_lbl->setAlignment(Qt::AlignCenter);
+        print_num_finger_lbl = new QLabel(centralWidget);
+        print_num_finger_lbl->setObjectName(QStringLiteral("print_num_finger_lbl"));
+        print_num_finger_lbl->setGeometry(QRect(340, 30, 101, 51));
+        print_num_finger_lbl->setStyleSheet(QLatin1String("background-color: rgb(43, 252, 255);\n"
+"border: 2px solid #222222;\n"
+"border-radius: 10px;\n"
+"font: 75 15pt \"Times New Roman\";"));
+        print_num_finger_lbl->setAlignment(Qt::AlignCenter);
         MainWindow->setCentralWidget(centralWidget);
         layoutWidget->raise();
         label_5->raise();
@@ -204,6 +215,8 @@ public:
         start_program_btn->raise();
         start_process_btn->raise();
         change_bg_btn->raise();
+        hand_lbl->raise();
+        print_num_finger_lbl->raise();
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
         MainWindow->addToolBar(Qt::TopToolBarArea, mainToolBar);
@@ -234,13 +247,14 @@ public:
         browser_btn->setText(QApplication::translate("MainWindow", "Browser", 0));
         start_program_btn->setText(QApplication::translate("MainWindow", "Start Program", 0));
         start_process_btn->setText(QApplication::translate("MainWindow", "Start Process", 0));
-        label_6->setText(QApplication::translate("MainWindow", "Option:", 0));
         show_per_cb->setText(QApplication::translate("MainWindow", "Show_Per", 0));
         sub_bg_cb->setText(QApplication::translate("MainWindow", "Sub_BG", 0));
         equal_his_cb->setText(QApplication::translate("MainWindow", "Equal_His", 0));
         draw_his_cb->setText(QApplication::translate("MainWindow", "Draw_His", 0));
         ctrl_mouse_cb->setText(QApplication::translate("MainWindow", "Ctrl_Mouse", 0));
         ctrl_arrow_cb->setText(QApplication::translate("MainWindow", "Ctrl_Arrow", 0));
+        hand_lbl->setText(QApplication::translate("MainWindow", "---o---", 0));
+        print_num_finger_lbl->setText(QApplication::translate("MainWindow", "n", 0));
     } // retranslateUi
 
 };

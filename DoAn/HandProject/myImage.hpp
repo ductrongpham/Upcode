@@ -21,6 +21,8 @@ public:
     VideoCapture cap;
     int cameraSrc;
     void initWebCamera(int i);
+    void setCam(int index);
+    void setCam(string file);
 };
 
 #endif // MYIMAGE_HPP

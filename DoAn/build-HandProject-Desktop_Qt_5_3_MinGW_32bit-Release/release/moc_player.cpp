@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_Player_t {
-    QByteArrayData data[12];
-    char stringdata[128];
+    QByteArrayData data[16];
+    char stringdata[162];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -40,12 +40,17 @@ QT_MOC_LITERAL(7, 83, 14),
 QT_MOC_LITERAL(8, 98, 4),
 QT_MOC_LITERAL(9, 103, 16),
 QT_MOC_LITERAL(10, 120, 3),
-QT_MOC_LITERAL(11, 124, 3)
+QT_MOC_LITERAL(11, 124, 3),
+QT_MOC_LITERAL(12, 128, 13),
+QT_MOC_LITERAL(13, 142, 2),
+QT_MOC_LITERAL(14, 145, 12),
+QT_MOC_LITERAL(15, 158, 3)
     },
     "Player\0processedImage\0\0image\0"
     "processedBackground\0processedHistogram\0"
     "processedMouse\0processedArrow\0imge\0"
-    "processedPercent\0per\0fps"
+    "processedPercent\0per\0fps\0processedHand\0"
+    "lr\0processedNum\0num"
 };
 #undef QT_MOC_LITERAL
 
@@ -55,20 +60,22 @@ static const uint qt_meta_data_Player[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       6,   14, // methods
+       8,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       6,       // signalCount
+       8,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   44,    2, 0x06 /* Public */,
-       4,    1,   47,    2, 0x06 /* Public */,
-       5,    1,   50,    2, 0x06 /* Public */,
-       6,    1,   53,    2, 0x06 /* Public */,
-       7,    1,   56,    2, 0x06 /* Public */,
-       9,    2,   59,    2, 0x06 /* Public */,
+       1,    1,   54,    2, 0x06 /* Public */,
+       4,    1,   57,    2, 0x06 /* Public */,
+       5,    1,   60,    2, 0x06 /* Public */,
+       6,    1,   63,    2, 0x06 /* Public */,
+       7,    1,   66,    2, 0x06 /* Public */,
+       9,    2,   69,    2, 0x06 /* Public */,
+      12,    1,   74,    2, 0x06 /* Public */,
+      14,    1,   77,    2, 0x06 /* Public */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::QImage,    3,
@@ -77,6 +84,8 @@ static const uint qt_meta_data_Player[] = {
     QMetaType::Void, QMetaType::QImage,    3,
     QMetaType::Void, QMetaType::QImage,    8,
     QMetaType::Void, QMetaType::Int, QMetaType::Double,   10,   11,
+    QMetaType::Void, QMetaType::Int,   13,
+    QMetaType::Void, QMetaType::Int,   15,
 
        0        // eod
 };
@@ -92,6 +101,8 @@ void Player::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         case 3: _t->processedMouse((*reinterpret_cast< const QImage(*)>(_a[1]))); break;
         case 4: _t->processedArrow((*reinterpret_cast< const QImage(*)>(_a[1]))); break;
         case 5: _t->processedPercent((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const double(*)>(_a[2]))); break;
+        case 6: _t->processedHand((*reinterpret_cast< const int(*)>(_a[1]))); break;
+        case 7: _t->processedNum((*reinterpret_cast< const int(*)>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -133,6 +144,18 @@ void Player::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
                 *result = 5;
             }
         }
+        {
+            typedef void (Player::*_t)(const int & );
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&Player::processedHand)) {
+                *result = 6;
+            }
+        }
+        {
+            typedef void (Player::*_t)(const int & );
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&Player::processedNum)) {
+                *result = 7;
+            }
+        }
     }
 }
 
@@ -161,13 +184,13 @@ int Player::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 8)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 8;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 6)
+        if (_id < 8)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 6;
+        _id -= 8;
     }
     return _id;
 }
@@ -212,5 +235,19 @@ void Player::processedPercent(const int & _t1, const double & _t2)
 {
     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)) };
     QMetaObject::activate(this, &staticMetaObject, 5, _a);
+}
+
+// SIGNAL 6
+void Player::processedHand(const int & _t1)
+{
+    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    QMetaObject::activate(this, &staticMetaObject, 6, _a);
+}
+
+// SIGNAL 7
+void Player::processedNum(const int & _t1)
+{
+    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    QMetaObject::activate(this, &staticMetaObject, 7, _a);
 }
 QT_END_MOC_NAMESPACE

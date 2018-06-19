@@ -18,9 +18,13 @@ MainWindow::MainWindow(QWidget *parent) :
                               this, SLOT(updatePercentUI(int,double)));
     QObject::connect(myPlayer, SIGNAL(processedHistogram(QImage)),
                               this, SLOT(updateHistogramUI(QImage)));
+    QObject::connect(myPlayer, SIGNAL(processedHand(int)),
+                              this, SLOT(updateHandUI(int)));
+    QObject::connect(myPlayer, SIGNAL(processedNum(int)),
+                              this, SLOT(updateNumUI(int)));
     ui->setupUi(this);
 }
-
+// check update UI______________________________
 void MainWindow::updatePlayerUI(QImage img)
 {
     if (!img.isNull())
@@ -70,11 +74,29 @@ void MainWindow::updatePercentUI(int per,double fps)
         ui->print_percent_lbl->setAlignment(Qt::AlignCenter);
         QString number;
         number = QString::number(per);
-        number.append(" %");
+        number.append(" % ");
         number.append(QString::number(fps));
         number.append(" fps");
         ui->print_percent_lbl->setText(number);
 }
+void MainWindow::updateNumUI(int num)
+{
+        ui->print_num_finger_lbl->setAlignment(Qt::AlignCenter);
+        QString number;
+        number = QString::number(num);
+        ui->print_num_finger_lbl->setText(number);
+}
+
+void MainWindow::updateHandUI(int lr)
+{
+    switch(lr){
+        case 1:ui->hand_lbl->setText("------>");break;
+        case 0: ui->hand_lbl->setText("---0---");break;
+        case -1:ui->hand_lbl->setText("<------");break;
+    }
+}
+//_________________________________________________
+//check event component____________________________
 
 void MainWindow::on_show_per_cb_stateChanged(int arg1)
 {
@@ -132,7 +154,9 @@ void MainWindow::on_ctrl_arrow_cb_stateChanged(int arg1)
 
 void MainWindow::on_change_bg_btn_clicked()
 {
-    myPlayer->flag1 = !myPlayer->flag1;
+    if( myPlayer->resetProcess !=0){
+        myPlayer->flag1 = !myPlayer->flag1;
+    }
 }
 
 void MainWindow::on_start_program_btn_clicked()
@@ -142,20 +166,33 @@ void MainWindow::on_start_program_btn_clicked()
         myPlayer->Play();
         myPlayer->flagClose = false;
         ui->start_program_btn->setText(tr("Stop Program"));
-    }else
+    }
+    else
     {
         myPlayer->Stop();
         myPlayer->flagClose = true;
+        myPlayer->resetProcess = 0;
+        myPlayer->flagOn = 0;
+        myPlayer->flagReset = true;
+        ui->start_process_btn->setText(tr("Play process"));
         ui->start_program_btn->setText(tr("Play Program"));
     }
 }
 
 void MainWindow::on_start_process_btn_clicked()
 {
-    if(myPlayer->flagOn == 0)
-        myPlayer->flagOn = 1;
-    else
+    if(myPlayer->isReseted() == (-1)){
         myPlayer->flagOn = 0;
+        myPlayer->flagReset = true;
+        myPlayer->resetProcess = 0;
+        ui->start_process_btn->setText(tr("Play Process"));
+    }
+    if(myPlayer->isReseted() == (1)){
+        myPlayer->flagOn = 1;
+        myPlayer->flagReset = false;
+        myPlayer->resetProcess = 0;
+        ui->start_process_btn->setText(tr("Reset Process"));
+    }
 }
 
 MainWindow::~MainWindow()
@@ -166,5 +203,19 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_browser_btn_clicked()
 {
-
+    QString filename = QFileDialog::getOpenFileName(this,
+                                          tr("Open Video"), ".",
+                                          tr("Video Files (*.avi *.mpg *.mp4)"));
+    if (!filename.isEmpty()){
+            myPlayer->Stop();
+            myPlayer->fileName = filename.toStdString();
+            myPlayer->flagVideo = true;
+            myPlayer->flagClose = true;
+            myPlayer->resetProcess = 0;
+            myPlayer->flagOn = 0;
+            ui->start_process_btn->setText(tr("Play process"));
+            ui->start_program_btn->setText(tr("Play Program"));
+    }
 }
+
+//_____________________________________________________________

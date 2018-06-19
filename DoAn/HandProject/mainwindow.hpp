@@ -23,6 +23,9 @@ private slots:
     void updateMouseUI(QImage img);
     void updateArrowUI(QImage img);
     void updatePercentUI(int per,double fps);
+    void updateHandUI(int lr);
+    void updateNumUI(int num);
+
     void on_show_per_cb_stateChanged(int arg1);
 
     void on_sub_bg_cb_stateChanged(int arg1);

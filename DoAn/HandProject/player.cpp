@@ -12,7 +12,8 @@ void Player::WaitKeyOS(int ms){
     struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
     nanosleep(&ts, NULL);
 #else
-    waitKey(ms);
+    Sleep(ms);
+//    waitKey(ms);
 #endif
 }
 
@@ -71,6 +72,15 @@ void Player::percentShow(int per,double fps){
     emit processedPercent(per,fps);
 }
 
+void Player::handShow(int lr){
+    emit processedHand(lr);
+}
+
+
+void Player::numShow(int num){
+    emit processedNum(num);
+}
+
 void Player::imShow(Mat frame){
     if (frame.channels()== 3){
         cv::cvtColor(frame, RGBframe, CV_BGR2RGB);
@@ -107,6 +117,7 @@ Player::Player(QObject *parent)
  : QThread(parent)
 {
     stop = true;
+    resetProcess = true;
 }
 
 bool Player::loadVideo(String filename) {
@@ -121,6 +132,10 @@ void Player::Play()
         }
         start(LowPriority);
     }
+}
+
+int Player::isReseted()const{
+    return this->resetProcess;
 }
 
 Player::~Player()
@@ -160,6 +175,9 @@ void Player::waitStartProgress(MyImage m){
         imShow(m.src);
 //        if (cv::waitKey(30) == char('q')) break;
         WaitKeyOS(30);
+        if(flagClose){
+            break;
+        }
         roi7.clear();
     }
 }
@@ -224,7 +242,58 @@ void Player::waitForPalmCover(MyImage *m){
 //        if (cv::waitKey(30) >= 0) break;
         WaitKeyOS(30);
     }
+    mySelection.x = Point(m->src.cols / 4 - 40, m->src.rows / 2).x;
+    mySelection.y = Point(m->src.cols / 3 - 40, m->src.rows / 6).y;
+    mySelection.width = std::abs(Point(m->src.cols / 2 - 60 + square_len, m->src.rows / 1.5 + square_len).x - Point(m->src.cols / 4 - 40, m->src.rows / 2).x);
+    mySelection.height = std::abs(Point(m->src.cols / 2 - 60 + square_len, m->src.rows / 1.5 + square_len).y - Point(m->src.cols / 3 - 40, m->src.rows / 6).y);
 }
+
+Mat Player::cropHand(Mat &imageHand, Rect trackBox){
+    Size rect_size = trackBox.size();
+    Point2f centerBox((trackBox.tl().x + trackBox.br().x) / 2, (trackBox.tl().y + trackBox.br().y) / 2);
+    Mat M = getRotationMatrix2D(centerBox, 0, 1.0);
+    Mat rotatedMask;
+    Mat croppedMask;
+    warpAffine(imageHand, rotatedMask, M, imageHand.size(), INTER_CUBIC);
+    getRectSubPix(rotatedMask, rect_size, centerBox, croppedMask);
+    resize(croppedMask, croppedMask, cv::Size(100,120));
+    arrowShow(croppedMask);
+    return croppedMask;
+}
+
+void Player::camShiftDemo(Mat &src, Mat &imageHLS, Mat& maskHLS, Mat &hue, Mat &hist, const float * phranges, int &hsize, Rect &trackWindow, bool &flagCam){
+
+    Mat backproj;
+    int ch[] = { 0, 0 };
+    hue.create(imageHLS.size(), imageHLS.depth());
+    mixChannels(&imageHLS, 1, &hue, 1, ch, 1);
+
+    if (flagCam){
+        Mat mroi(hue, mySelection), maskroi(maskHLS, mySelection);
+        calcHist(&mroi, 1, 0, maskroi, hist, 1, &hsize, &phranges);
+        normalize(hist, hist, 0, 255, CV_MINMAX);
+        trackWindow = mySelection;
+        flagCam = false;
+    }
+
+    calcBackProject(&hue, 1, 0, hist, backproj, &phranges);
+    backproj &= maskHLS;
+    CamShift(backproj, trackWindow, TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1));
+    if (trackWindow.area() <= 1)
+    {
+        int cols = backproj.cols;
+        int rows = backproj.rows;
+        int r = (MIN(cols, rows) + 5) / 6;
+        trackWindow = Rect(trackWindow.x - r, trackWindow.y - r, trackWindow.x + r, trackWindow.y + r) & Rect(0, 0, cols, rows);
+    }
+    Rect window(Point(trackWindow.tl().x - 40, trackWindow.tl().y - 40), Point(trackWindow.br().x + 40, trackWindow.br().y + 40));
+    rectangle(src, trackWindow, Scalar(216, 220, 15), 2, 8);
+    if (window.area() > 0){
+        cropHand(src, window);
+    }
+}
+
+
 int Player::getMedian(vector<int> val){
     int median;
     size_t size = val.size();
@@ -273,7 +342,7 @@ void Player::average(MyImage *m){
         string imgText = string("Finding average color of hand");
         printText(m->src, imgText);
         imShow(m->src);
-        if (cv::waitKey(30) >= 0) break;
+//        if (cv::waitKey(30) >= 0) break;
         WaitKeyOS(30);
     }
 }
@@ -294,13 +363,13 @@ void Player::inittrackbar(){
         c_upper[i][2] = 255;
     }
     threshold_bar_static = 150;
-    createTrackbar("H-Upper", "trackbar_n", &c_upper[0][0], 180);
-    createTrackbar("H-Lower", "trackbar_n", &c_lower[0][0], 180);
-    createTrackbar("S-Upper", "trackbar_n", &c_upper[0][1], 255);
-    createTrackbar("S-Lower", "trackbar_n", &c_lower[0][1], 255);
-    createTrackbar("L-Upper", "trackbar_n", &c_upper[0][2], 255);
-    createTrackbar("L-Lower", "trackbar_n", &c_lower[0][2], 255);
-    createTrackbar("Threshsold static", "trackbar_n", &threshold_bar_static, 255);
+    createTrackbar("H-Upper", "trackbars", &c_upper[0][0], 180);
+    createTrackbar("H-Lower", "trackbars", &c_lower[0][0], 180);
+    createTrackbar("S-Upper", "trackbars", &c_upper[0][1], 255);
+    createTrackbar("S-Lower", "trackbars", &c_lower[0][1], 255);
+    createTrackbar("L-Upper", "trackbars", &c_upper[0][2], 255);
+    createTrackbar("L-Lower", "trackbars", &c_lower[0][2], 255);
+    createTrackbar("Threshsold static", "trackbars", &threshold_bar_static, 255);
 }
 void Player::normalizeColors(){
     // copy all boundaries read from trackbar
@@ -832,145 +901,217 @@ void Player::run()
         socklen_t m_server = sizeof(serv);
         struct PointCenter pointCenter;
 #endif
-    MyImage m(0);
+
     while(!stop){
-        square_len = 15;
-        Shape sh;
-        HandGesture hg1;
-        m.cap >> m.src;
-        Mat framePrev;
-        framePrev = returnImagePrev(m.cap);
-        bgShow(framePrev);
-        waitStartProgress(m);
-        m.cap >> m.src;
-        waitForPalmCover(&m);
-        average(&m);
-        float per;
-        namedWindow("trackbar_n", CV_WINDOW_KEEPRATIO);
-        inittrackbar();
-        int xcu, ycu, xx, yy;
-        xcu = ycu = xx = yy = 0;
-        int flagC = 1;
-        int flagLC = 1;
-        int pressArrowKeyLeft = 0;
-        int pressArrowKeyRight = 0;
+       MyImage m;
+       if(flagVideo){
+           m.setCam(fileName);
+           flagVideo = false;
+       }else{
+           m.setCam(0);
+       }
         while(1){
-            hg1.frameNumber++;
-//            waitKey(5);
-            WaitKeyOS(5);
+            resetProcess = 0;
+            square_len = 15;
+            Shape sh;
+            HandGesture hg1;
             m.cap >> m.src;
-            convertCamera(m.src);
-            m.src.copyTo(m.srcLR);
+            Mat framePrev;
+            framePrev = returnImagePrev(m.cap);
+            bgShow(framePrev);
+            resetProcess = 1;
+            waitStartProgress(m);
+            flagOn = 0;
+            if(flagClose) break;
+            m.cap >> m.src;
+            waitForPalmCover(&m);
+            average(&m);
+            float per;
+            namedWindow("trackbars", CV_WINDOW_KEEPRATIO);
+            inittrackbar();
 
-            if (flag2){
-                m.srcLR = canBangHistogram(m.srcLR);
-                imshow("CanBangHistogram", m.srcLR);
-            }
-            else{
-                cvDestroyWindow("CanBangHistogram");
-            }
+            int xcu, ycu, xx, yy;
+            xcu = ycu = xx = yy = 0;
+            int flagC = 1;
+            int flagLC = 1;
+            int pressArrowKeyLeft = 0;
+            int pressArrowKeyRight = 0;
 
-            if (flag3){
-                drawHist("Histogram", m.srcLR);
-            }
-            if (flag0){
-                m.srcLR = returnSubBackgroundStatic(m.src, framePrev);
-            }
+            ////////////////////////////////////////////////
+            Rect trackWindow;
+            int hsize = 16;
+            float hranges[] = { 0, 180 };
+            const float* phranges = hranges;
+            Mat hue, hist;
+            bool flagCam = true;
+            mySelection &= Rect(0, 0, 320, 240);
+            ////////////////////////////////////////////////
 
-            if (flag1){
-                framePrev = returnImagePrev(m.cap);
-                bgShow(framePrev);
-                flag1 = !flag1;
-            }
+            while(1){
+                resetProcess = -1;
+                hg1.frameNumber++;
+    //            waitKey(5);
+                WaitKeyOS(5);
+                m.cap >> m.src;
+                if (m.src.empty()){
+                    flagClose = true;
+                    break;
+                }
+                convertCamera(m.src);
+                m.src.copyTo(m.srcLR);
 
-            if (flag4){
-                per = returnPercentDiff(framePrev, m.src);
-                per = per * 100;
-                double fps= m.cap.get(CAP_PROP_FPS);
-                percentShow(per,fps);
-                if (per < 30.0f){
+                if (flag2){
+                    m.srcLR = canBangHistogram(m.srcLR);
+                    imshow("CanBangHistogram", m.srcLR);
+                }
+                else{
+                    cvDestroyWindow("CanBangHistogram");
+                }
+
+                if (flag3){
+                    drawHist("Histogram", m.srcLR);
+                }
+                if (flag0){
+                    m.srcLR = returnSubBackgroundStatic(m.src, framePrev);
+                }
+
+                if (flag1){
                     framePrev = returnImagePrev(m.cap);
+                    bgShow(framePrev);
+                    flag1 = !flag1;
                 }
-            }
-            pyrDown(m.srcLR, m.srcLR);
-            blur(m.srcLR, m.srcLR, Size(3, 3));
-            cvtColor(m.srcLR, m.srcLR, ORIGCOL2COL);
-            produceBinaries(&m);
-            pyrUp(m.bw, m.bw);
-            pyrUp(m.srcLR, m.srcLR);
-            cvtColor(m.srcLR, m.srcLR, COL2ORIGCOL);
-            makeContours(m.src, m.bw, &sh, &hg1);
-#ifdef __linux__
-            pointCenter.arrowKeyLeft = false;
-            pointCenter.arrowKeyRight = false;
-            pointCenter.x = -1;
-            pointCenter.y = -1;
-            pointCenter.fingerNum = -1;
-#endif
-            if (flag5){
-#ifdef __linux__
-                pointCenter.x = hg1.getPointCenter().x;
-                pointCenter.y = hg1.getPointCenter().y;
-                pointCenter.fingerNum = hg1.mostFrequentFingerNumber;
-#else
-                xx = hg1.getPointCenter().x;
-                yy = hg1.getPointCenter().y;
-                controlCursor(flagC, flagLC, xx, yy, xcu, ycu, hg1);
-                xcu = xx;
-                ycu = yy;
-#endif
-                cv::Mat mouseImg(240, 320, CV_8UC3, Scalar(0, 0, 0));
-                cv::circle(mouseImg,hg1.getPointCenter(), 8, Scalar(0, 200, 0), 4);
-                mouseShow(mouseImg);
-            }
-            if (flag6){
-                double rl = getOrientation(hg1.contours, m.src);
-                if (rl < 1.1){
-                    putText(m.src, "<--", Point(250, 220), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
-                    pressArrowKeyLeft++;
-                    pressArrowKeyRight = 0;
-                    if (pressArrowKeyLeft == 10){
-#ifdef __linux__
-                        pointCenter.arrowKeyLeft = true;
-#else
-                        SetArrowLeft(true);
-                        SetArrowLeft(false);
-#endif
-                        cout << "press left" << endl;
-                        pressArrowKeyLeft = 0;
-                    }
 
+                if (flag4){
+                    per = returnPercentDiff(framePrev, m.src);
+                    per = per * 100;
+                    double fps= m.cap.get(CAP_PROP_FPS);
+                    percentShow(per,fps);
+                    if (per < 30.0f){
+                        framePrev = returnImagePrev(m.cap);
+                    }
                 }
-                if (rl > 1.9){
-                    putText(m.src, "-->", Point(250, 220), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
-                    pressArrowKeyRight++;
-                    pressArrowKeyLeft = 0;
-                    if (pressArrowKeyRight == 10){
-#ifdef __linux__
-                        pointCenter.arrowKeyRight = true;
-#else
-                        SetArrowRight(true);
-                        SetArrowRight(false);
-#endif
-                        cout << "press right" << endl;
+                pyrDown(m.srcLR, m.srcLR);
+                blur(m.srcLR, m.srcLR, Size(3, 3));
+                cvtColor(m.srcLR, m.srcLR, ORIGCOL2COL);
+                produceBinaries(&m);
+                pyrUp(m.bw, m.bw);
+                pyrUp(m.srcLR, m.srcLR);
+                camShiftDemo(m.src, m.srcLR, m.bw, hue, hist, phranges, hsize, trackWindow, flagCam);
+                cvtColor(m.srcLR, m.srcLR, COL2ORIGCOL);
+                makeContours(m.src, m.bw, &sh, &hg1);
+    #ifdef __linux__
+                pointCenter.arrowKeyLeft = false;
+                pointCenter.arrowKeyRight = false;
+                pointCenter.x = -1;
+                pointCenter.y = -1;
+                pointCenter.fingerNum = -1;
+    #endif
+                if (flag5){
+    #ifdef __linux__
+                    pointCenter.x = hg1.getPointCenter().x;
+                    pointCenter.y = hg1.getPointCenter().y;
+                    pointCenter.fingerNum = hg1.mostFrequentFingerNumber;
+    #else
+                    xx = hg1.getPointCenter().x;
+                    yy = hg1.getPointCenter().y;
+                    controlCursor(flagC, flagLC, xx, yy, xcu, ycu, hg1);
+                    xcu = xx;
+                    ycu = yy;
+    #endif
+                    cv::Mat mouseImg(240, 320, CV_8UC3, Scalar(0, 0, 0));
+                    cv::circle(mouseImg,hg1.getPointCenter(), 8, Scalar(0, 200, 0), 4);
+                    mouseShow(mouseImg);
+                }
+                if (flag6){
+                    double rl = getOrientation(hg1.contours, m.src);
+                    if (rl < 1.1){
+    //                    putText(m.src, "<--", Point(250, 220), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
+                        pressArrowKeyLeft++;
                         pressArrowKeyRight = 0;
+                        if (pressArrowKeyLeft == 10){
+    #ifdef __linux__
+                            pointCenter.arrowKeyLeft = true;
+    #else
+                            SetArrowLeft(true);
+                            SetArrowLeft(false);
+    #endif
+                            pressArrowKeyLeft = 0;
+                            handShow(-1);
+                        }
+
+                    }
+                    if (rl > 1.9){
+    //                    putText(m.src, "-->", Point(250, 220), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
+                        pressArrowKeyRight++;
+                        pressArrowKeyLeft = 0;
+                        if (pressArrowKeyRight == 10){
+    #ifdef __linux__
+                            pointCenter.arrowKeyRight = true;
+    #else
+                            SetArrowRight(true);
+                            SetArrowRight(false);
+    #endif
+                            pressArrowKeyRight = 0;
+                            handShow(1);
+                        }
+                    }
+                    if(rl<=1.9 && rl>=1.1){
+                        handShow(0);
                     }
                 }
+
+    #ifdef __linux__
+
+                if (flag5 || flag6){
+                    sendto(sockfd, (char*)&pointCenter, sizeof(pointCenter), 0, (struct sockaddr *)&serv, m_server);
+                }
+                memset(&pointCenter, 0, sizeof(pointCenter));
+    #endif
+                numShow(hg1.mostFrequentFingerNumber);
+                showWindows(m.src, m.bw);
+                if(flagClose){
+                    break;
+                }
+                if(flagReset){
+                    break;
+                }
+            }//while process
+            for (int i = 0; i < NSAMPLES; i++){
+                c_lower[i][0] = 30;
+                c_upper[i][0] = 180;
+                c_lower[i][1] = 30;
+                c_upper[i][1] = 255;
+                c_lower[i][2] = 15;
+                c_upper[i][2] = 255;
+                avgColor[i][0] = 0;
+                avgColor[i][1] = 0;
+                avgColor[i][2] = 0;
             }
 
 #ifdef __linux__
+            cout << "program finished clear GPIO" << endl;
+            digitalWrite(LED1, 0);
+            digitalWrite(LED2, 0);
+            digitalWrite(LED3, 0);
+            digitalWrite(LED4, 0);
+            digitalWrite(LED5, 0);
+            digitalWrite(LED_NO, 0);
 
-            if (flag5 || flag6){
-                sendto(sockfd, (char*)&pointCenter, sizeof(pointCenter), 0, (struct sockaddr *)&serv, m_server);
-            }
-            memset(&pointCenter, 0, sizeof(pointCenter));
+            pinMode(LED1, INPUT);
+            pinMode(LED2, INPUT);
+            pinMode(LED3, INPUT);
+            pinMode(LED4, INPUT);
+            pinMode(LED5, INPUT);
+            pinMode(LED_NO, INPUT);
 #endif
-            showWindows(m.src, m.bw);
-            if(flagClose){
+            roi.clear();
+            cout << "reset" << endl;
+            destroyAllWindows();
+            if(flagClose)
                 break;
-            }
-        }
+
+        }//while reset
         m.cap.release();
-    }
-    m.cap.release();
+        flagClose = false;
+    }// while run
 }

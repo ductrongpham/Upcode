@@ -83,6 +83,8 @@ class Player : public QThread
       void processedMouse(const QImage &image);
       void processedArrow(const QImage &imge);
       void processedPercent(const int &per,const double &fps);
+      void processedHand(const int &lr);
+      void processedNum(const int &num);
  protected:
      void run();
  #ifdef __linux__
@@ -133,6 +135,8 @@ class Player : public QThread
     void drawHist(String name, Mat src);
     Mat canBangHistogram(Mat &imageSrc);
     double getOrientation(vector<Point> &contours, Mat &img);
+    void camShiftDemo(Mat &src, Mat &imageHLS, Mat& maskHLS, Mat &hue, Mat &hist, const float * phranges, int &hsize, Rect &trackWindow, bool &flagCam);
+    Mat cropHand(Mat &imageHand, Rect trackBox);
     #ifdef __linux__
     void sig_handler(int signo);
     void error(const char *msg);
@@ -152,7 +156,6 @@ class Player : public QThread
     void MouseLeftBtnUp();
     void MouseRightBtnDown();
     void MouseRightBtnUp();
-    void progressWindows();
     void controlCursor(int &flagC, int&flagLC, int xx, int yy, int xcu, int ycu, HandGesture hg1);
     #endif
 //_________________________________
@@ -168,6 +171,10 @@ class Player : public QThread
     void Stop();
     //check if the player has been stopped
     bool isStopped() const;
+    int isReseted() const;
+
+    bool flagReset = false;
+    int resetProcess = 0;
 
     void imShow(Mat frame);
     void bgShow(Mat frame);
@@ -175,7 +182,10 @@ class Player : public QThread
     void mouseShow(Mat frame);
     void percentShow(int per,double fps);
     void arrowShow(Mat frame);
-
+    void handShow(int lr);
+    void numShow(int num);
     void WaitKeyOS(int ms);
+     bool flagVideo = false;
+     String fileName;
 };
 #endif // PLAYER_HPP

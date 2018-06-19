@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>840</width>
-    <height>350</height>
+    <width>802</width>
+    <height>344</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>840</width>
-    <height>350</height>
+    <width>800</width>
+    <height>300</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>840</width>
-    <height>350</height>
+    <height>450</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -86,7 +86,7 @@
    <widget class="QLabel" name="ctrl_arrow_lbl">
     <property name="geometry">
      <rect>
-      <x>660</x>
+      <x>630</x>
       <y>190</y>
       <width>160</width>
       <height>120</height>
@@ -120,7 +120,7 @@ border-radius: 10px;</string>
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>660</x>
+      <x>630</x>
       <y>160</y>
       <width>141</width>
       <height>20</height>
@@ -168,7 +168,7 @@ border-radius: 10px;</string>
    <widget class="QLabel" name="ctrl_mouse_lbl">
     <property name="geometry">
      <rect>
-      <x>660</x>
+      <x>630</x>
       <y>30</y>
       <width>160</width>
       <height>120</height>
@@ -187,7 +187,7 @@ border-radius: 10px;</string>
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>660</x>
+      <x>630</x>
       <y>0</y>
       <width>161</width>
       <height>20</height>
@@ -222,19 +222,22 @@ border-radius: 10px;
     <property name="geometry">
      <rect>
       <x>340</x>
-      <y>30</y>
+      <y>90</y>
       <width>101</width>
-      <height>51</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgb(255, 217, 24);
 border: 2px solid #222222;
 border-radius: 10px;
-font: 75 20pt &quot;Times New Roman&quot;;</string>
+font: 75 15pt &quot;Times New Roman&quot;;</string>
     </property>
     <property name="text">
      <string>%</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QPushButton" name="browser_btn">
@@ -295,19 +298,12 @@ border-radius: 10px;
     <property name="geometry">
      <rect>
       <x>340</x>
-      <y>110</y>
+      <y>133</y>
       <width>101</width>
-      <height>161</height>
+      <height>141</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>Option:</string>
-       </property>
-      </widget>
-     </item>
      <item>
       <widget class="QCheckBox" name="show_per_cb">
        <property name="text">
@@ -352,6 +348,48 @@ border-radius: 10px;
      </item>
     </layout>
    </widget>
+   <widget class="QLabel" name="hand_lbl">
+    <property name="geometry">
+     <rect>
+      <x>630</x>
+      <y>280</y>
+      <width>161</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 75 14pt &quot;.VnBlackH&quot;;
+color: rgb(255, 14, 14);</string>
+    </property>
+    <property name="text">
+     <string>---o---</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="print_num_finger_lbl">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>30</y>
+      <width>101</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(43, 252, 255);
+border: 2px solid #222222;
+border-radius: 10px;
+font: 75 15pt &quot;Times New Roman&quot;;</string>
+    </property>
+    <property name="text">
+     <string>n</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
    <zorder>layoutWidget</zorder>
    <zorder>label_5</zorder>
    <zorder>img_lbl</zorder>
@@ -368,6 +406,8 @@ border-radius: 10px;
    <zorder>start_program_btn</zorder>
    <zorder>start_process_btn</zorder>
    <zorder>change_bg_btn</zorder>
+   <zorder>hand_lbl</zorder>
+   <zorder>print_num_finger_lbl</zorder>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
