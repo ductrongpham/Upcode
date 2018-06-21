@@ -203,19 +203,29 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_browser_btn_clicked()
 {
+    myPlayer->Stop();
+    myPlayer->flagClose = true;
+    myPlayer->resetProcess = 0;
+    myPlayer->flagOn = 0;
+    myPlayer->WaitKeyOS(2000);
     QString filename = QFileDialog::getOpenFileName(this,
                                           tr("Open Video"), ".",
                                           tr("Video Files (*.avi *.mpg *.mp4)"));
     if (!filename.isEmpty()){
-            myPlayer->Stop();
             myPlayer->fileName = filename.toStdString();
             myPlayer->flagVideo = true;
-            myPlayer->flagClose = true;
-            myPlayer->resetProcess = 0;
-            myPlayer->flagOn = 0;
             ui->start_process_btn->setText(tr("Play process"));
             ui->start_program_btn->setText(tr("Play Program"));
     }
 }
-
 //_____________________________________________________________
+
+void MainWindow::on_waitkey_sl_valueChanged(int value)
+{
+    myPlayer->time_wait = value;
+}
+
+void MainWindow::on_waitkey_sl_sliderMoved(int position)
+{
+    ui->value_slider_lbl->setText("Value : "+ QString::number(position));
+}

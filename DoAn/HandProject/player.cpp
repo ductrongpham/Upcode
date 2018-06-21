@@ -1,4 +1,5 @@
 #include "player.hpp"
+
 //_________________________________________________________________________________
 #ifdef __linux__
 void Player::msleep(int ms){
@@ -264,7 +265,7 @@ Mat Player::cropHand(Mat &imageHand, Rect trackBox){
     return croppedMask;
 }
 
-void Player::camShiftDemo(Mat &src, Mat &imageHLS, Mat& maskHLS, Mat &hue, Mat &hist, const float * phranges, int &hsize, Rect &trackWindow, bool &flagCam){
+Rect Player::camShiftDemo(Mat &src, Mat &imageHLS, Mat& maskHLS, Mat &hue, Mat &hist, const float * phranges, int &hsize, Rect &trackWindow, bool &flagCam){
 
     Mat backproj;
     int ch[] = { 0, 0 };
@@ -294,6 +295,7 @@ void Player::camShiftDemo(Mat &src, Mat &imageHLS, Mat& maskHLS, Mat &hue, Mat &
     if (window.area() > 0){
         cropHand(src, window);
     }
+    return trackWindow;
 }
 
 
@@ -451,7 +453,7 @@ int* Player::findBiggestContour(vector<vector<Point> > contours){
     return index;
 }
 
-void Player::analyContour(Mat src, Shape *sh, int idxSh, HandGesture *hg){
+void Player::analyContour(Mat src, Shape *sh, int idxSh, HandGesture *hg, Rect boxCheckHand){
     Rect bRectSh = boundingRect(Mat(sh->contourShape[idxSh]));
     // Find the convex hull object for each contour
     //Tìm phần vỏ lồi của một điểm đặt.
@@ -475,7 +477,15 @@ void Player::analyContour(Mat src, Shape *sh, int idxSh, HandGesture *hg){
         sh->defectShape[idxSh],
         bRectSh);
     bool ishand = hg->detectIfHand(src);
-    if (ishand){
+    Point center = hg->getPointCenter();
+    bool hand = false;
+    if (center.x > boxCheckHand.tl().x && center.x < boxCheckHand.br().x){
+        if (center.y > boxCheckHand.tl().y && center.y < boxCheckHand.br().y){
+            hand = true;
+        }
+    }
+    if (ishand && hand){
+        ISHAND = true;
         hg->getFingerNumber(src);
         //putText(m->src, bool2string(ishand), Point(80, 80), fontFace, 2.0f, Scalar(255, 255, 255));
         vector <Point> p = hg->getFingerTips(src);
@@ -487,10 +497,12 @@ void Player::analyContour(Mat src, Shape *sh, int idxSh, HandGesture *hg){
         //drawContours(src, sh->contourShape, idxSh, cv::Scalar(0, 200, 0), 2, 8, vector<Vec4i>(), 0, Point());
         //ve o vuong bao tay
         rectangle(src, bRectSh.tl(), bRectSh.br(), Scalar(0, 0, 200));
+    }else{
+        ISHAND = false;
     }
 }
 
-void Player::makeContours(Mat src, Mat bw, Shape * sh, HandGesture *hg1){
+void Player::makeContours(Mat src, Mat bw, Shape * sh, HandGesture *hg1, Rect boxCheckHand){
     Mat aBw;
     double currentArea;
     vector<Vec4i> hierarchy;
@@ -518,7 +530,7 @@ void Player::makeContours(Mat src, Mat bw, Shape * sh, HandGesture *hg1){
         //lấy diện tích của đường định biên
         currentArea = contourArea(sh->contourShape[sh->cIdxShape]);
         if (currentArea > 2000){ //2500
-            analyContour(src, sh, sh->cIdxShape, hg1);
+            analyContour(src, sh, sh->cIdxShape, hg1,boxCheckHand);
         }
         else{
             hg1->mostFrequentFingerNumber = 0;
@@ -903,6 +915,7 @@ void Player::run()
 #endif
 
     while(!stop){
+
        MyImage m;
        if(flagVideo){
            m.setCam(fileName);
@@ -945,12 +958,19 @@ void Player::run()
             bool flagCam = true;
             mySelection &= Rect(0, 0, 320, 240);
             ////////////////////////////////////////////////
+#ifdef __linux__
 
+#else
+            time_t t_start;
+            time_t t_stop;
+            int fr_count = 0;
+            time(&t_start);
+#endif
             while(1){
                 resetProcess = -1;
                 hg1.frameNumber++;
     //            waitKey(5);
-                WaitKeyOS(5);
+                WaitKeyOS(time_wait);
                 m.cap >> m.src;
                 if (m.src.empty()){
                     flagVideo = false;
@@ -984,8 +1004,6 @@ void Player::run()
                 if (flag4){
                     per = returnPercentDiff(framePrev, m.src);
                     per = per * 100;
-                    double fps= m.cap.get(CAP_PROP_FPS);
-                    percentShow(per,fps);
                     if (per < 30.0f){
                         framePrev = returnImagePrev(m.cap);
                     }
@@ -996,9 +1014,9 @@ void Player::run()
                 produceBinaries(&m);
                 pyrUp(m.bw, m.bw);
                 pyrUp(m.srcLR, m.srcLR);
-                camShiftDemo(m.src, m.srcLR, m.bw, hue, hist, phranges, hsize, trackWindow, flagCam);
+                Rect boxCheckHand=camShiftDemo(m.src, m.srcLR, m.bw, hue, hist, phranges, hsize, trackWindow, flagCam);
                 cvtColor(m.srcLR, m.srcLR, COL2ORIGCOL);
-                makeContours(m.src, m.bw, &sh, &hg1);
+                makeContours(m.src, m.bw, &sh, &hg1,boxCheckHand);
     #ifdef __linux__
                 pointCenter.arrowKeyLeft = false;
                 pointCenter.arrowKeyRight = false;
@@ -1022,13 +1040,13 @@ void Player::run()
                     cv::circle(mouseImg,hg1.getPointCenter(), 8, Scalar(0, 200, 0), 4);
                     mouseShow(mouseImg);
                 }
-                if (flag6){
+                if (flag6 && ISHAND){
                     double rl = getOrientation(hg1.contours, m.src);
                     if (rl < 1.1){
     //                    putText(m.src, "<--", Point(250, 220), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
                         pressArrowKeyLeft++;
                         pressArrowKeyRight = 0;
-                        if (pressArrowKeyLeft == 10){
+                        if (pressArrowKeyLeft == 15){
     #ifdef __linux__
                             pointCenter.arrowKeyLeft = true;
     #else
@@ -1044,7 +1062,7 @@ void Player::run()
     //                    putText(m.src, "-->", Point(250, 220), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
                         pressArrowKeyRight++;
                         pressArrowKeyLeft = 0;
-                        if (pressArrowKeyRight == 10){
+                        if (pressArrowKeyRight == 15){
     #ifdef __linux__
                             pointCenter.arrowKeyRight = true;
     #else
@@ -1075,6 +1093,18 @@ void Player::run()
                 if(flagReset){
                     break;
                 }
+#ifdef __linux__
+
+#else
+                fr_count++;
+                time(&t_stop);
+                if ((t_stop - t_start) == 1){
+                    time(&t_start);
+                    percentShow(per,fr_count);
+                    fr_count = 0;
+                }
+#endif
+
             }//while process
             for (int i = 0; i < NSAMPLES; i++){
                 c_lower[i][0] = 30;

@@ -7,7 +7,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <process.h>
-
+#include <ctime>
 #define _WIN32_WINNT 0x0501
 #include <winuser.h>
 #pragma comment(lib,"ws2_32.lib" )
@@ -101,6 +101,8 @@ class Player : public QThread
       bool flag6 = false;
       bool flag7 = false;
       bool flagClose = false;
+      bool ISHAND = false;
+       int time_wait = 5;
     Rect mySelection; //selection chon
     int flagOn = 0; //cờ thông báo bắt đàu thực hiện sau khi nhấn start
     int fontFace = FONT_HERSHEY_PLAIN; //font chữ
@@ -122,8 +124,8 @@ class Player : public QThread
     void getAvgColor(MyRoi roi, int avg[3]);
     void normalizeColors();
     void showWindows(Mat src, Mat bw);
-    void makeContours(Mat src,Mat bw, Shape *sh, HandGesture *hg1);
-    void analyContour(Mat src, Shape *sh, int idxSh, HandGesture *hg);
+    void makeContours(Mat src,Mat bw, Shape *sh, HandGesture *hg1,Rect boxCheckHand);
+    void analyContour(Mat src, Shape *sh, int idxSh, HandGesture *hg,Rect boxCheckHand);
     float returnPercentDiff(Mat src_base, Mat src_test1);
     string bool2string(bool tf);
     void CallBackFunc(int event, int x, int y, int flags, void* userdata);
@@ -135,7 +137,7 @@ class Player : public QThread
     void drawHist(String name, Mat src);
     Mat canBangHistogram(Mat &imageSrc);
     double getOrientation(vector<Point> &contours, Mat &img);
-    void camShiftDemo(Mat &src, Mat &imageHLS, Mat& maskHLS, Mat &hue, Mat &hist, const float * phranges, int &hsize, Rect &trackWindow, bool &flagCam);
+    Rect camShiftDemo(Mat &src, Mat &imageHLS, Mat& maskHLS, Mat &hue, Mat &hist, const float * phranges, int &hsize, Rect &trackWindow, bool &flagCam);
     Mat cropHand(Mat &imageHand, Rect trackBox);
     #ifdef __linux__
     void sig_handler(int signo);

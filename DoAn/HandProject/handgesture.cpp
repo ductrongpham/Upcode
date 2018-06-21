@@ -288,6 +288,7 @@ vector<Point> HandGesture::getFingerTips(Mat src){
         }
         d++;
     }
+    Point ptStartOld;
     newDefects.swap(clone);
     d = newDefects.begin();
     while (d != newDefects.end()) {
@@ -296,19 +297,27 @@ vector<Point> HandGesture::getFingerTips(Mat src){
         int endidx = v[1]; Point ptEnd(contours[endidx]);
         int faridx = v[2]; Point ptFar(contours[faridx]);
         if (i != 0){
-            fingerTipsTest.push_back(ptEnd);
+            if (ptEnd.x >= (bRect.br().x - 20) && ptEnd.y >= (bRect.tl().y + bRect.height / 3)){
+            }
+            else{
+                if ((distanceP2P(ptStartOld, ptEnd) < 15 || getAngle(ptStartOld, center, ptEnd) < 10)){
+                }
+                else{
+                    fingerTipsTest.push_back(ptEnd);
+                }
+            }
         }
         else{
             if (distanceP2P(ptStart, ptEnd) < 30 || getAngle(ptStart, center, ptEnd)<30){}
             else{
                 fingerTipsTest.push_back(ptStart);
+                ptStartOld = ptStart;
                 fingerTipsTest.push_back(ptEnd);
             }
         }
         d++;
         i++;
     }
-    Point ptStartOld;
     if (fingerTipsTest.size()<3){
         fingerTipsTest.clear();
         i = 0;
@@ -335,6 +344,7 @@ vector<Point> HandGesture::getFingerTips(Mat src){
                         if (!((int)distanceP2P(center, ptStart) < 40 || (int)distanceP2P(center, ptStart) < 40)){
                             if ((distanceP2P(ptStart, ptEnd) < 15 || getAngle(ptStart, center, ptEnd) < 10)){
                                 fingerTipsTest.push_back(ptStart);
+                                ptStartOld = ptStart;
                             }
                             else{
                                 fingerTipsTest.push_back(ptStart);

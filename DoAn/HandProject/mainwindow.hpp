@@ -46,6 +46,10 @@ private slots:
 
     void on_browser_btn_clicked();
 
+    void on_waitkey_sl_valueChanged(int value);
+
+    void on_waitkey_sl_sliderMoved(int position);
+
 private:
     Ui::MainWindow *ui;
     Player* myPlayer;
