@@ -38,9 +38,7 @@ unsigned int __stdcall ServClient(void *data);
 #include <cmath>
 
 #ifdef __linux__
-#include <opencv2/opencv.hpp>
-#include <opencv2/tracking.hpp>
-#include <opencv2/core/ocl.hpp>
+
 #include <wiringPi.h>
 #include <signal.h>
 #include <unistd.h>

@@ -11,6 +11,9 @@ using namespace std;
 class MyImage{
 
 public:
+	int B;
+	int C;
+	int S;
 
 	MyImage();
 	MyImage(int webCamera);
@@ -21,6 +24,7 @@ public:
 	VideoCapture cap;
 	int cameraSrc;
 	void initWebCamera(int i);
+	void adjustCap(VideoCapture &cap);
 };
 
 #endif

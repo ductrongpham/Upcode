@@ -25,3 +25,8 @@ MyImage::MyImage(int webCamera){
 
 #endif
 }
+//void MyImage::adjustCap(VideoCapture &cap){
+//	cap.set(CV_CAP_PROP_BRIGHTNESS, float(B));
+//	cap.set(CV_CAP_PROP_CONTRAST, float(C));
+//	cap.set(CV_CAP_PROP_SATURATION, float(S));
+//}

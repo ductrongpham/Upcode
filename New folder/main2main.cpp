@@ -9,7 +9,7 @@
 #include <ctime>
 #include <time.h>
 
-//videoWriter video("video_demo.avi", CV_FOURCC('M', 'J', 'P', 'G'),10, Size(320,240));
+VideoWriter video("video_demo.avi", CV_FOURCC('M', 'J', 'P', 'G'),10, Size(320,240));
 			
 #ifdef __linux__
 #else
@@ -121,7 +121,7 @@ Mat returnImagePrev(VideoCapture cap){
 	Mat src;
 	for (int i = 0; i < 40; i++){
 		cap >> src;
-		//video.write(src);
+		video.write(src);
 		convertCamera(src);
 		if (i <= 20){
 			putText(src, "Sample image", Point(src.cols / 5, src.rows / 2), FONT_HERSHEY_PLAIN, 1.5f, Scalar(41, 0, 223), 2);
@@ -131,7 +131,7 @@ Mat returnImagePrev(VideoCapture cap){
 		}
 		if (i == 20){
 			cap >> framePrev;
-			//video.write(src);
+			video.write(src);
 			convertCamera(framePrev);
 		}
 		imshow("Sample Image", src);
@@ -200,9 +200,9 @@ Mat returnSubBackgroundStatic(Mat frameCurrent, Mat framePrev, Rect box){
 	int end_y = 0;
 	switch (kq1){
 	case 1: start_x = 0; end_x = 159; break;
-	case 2: start_x = 0; end_x = 199; break; //(40,199)
+	case 2: start_x = 40; end_x = 199; break;
 	case 5: start_x = 80; end_x = 239; break;
-	case 3: start_x = 120; end_x = 319; break;//(120,279)
+	case 3: start_x = 120; end_x = 279; break;
 	case 4: start_x = 160; end_x = 319; break;
 	}
 	switch (kq2){
@@ -370,16 +370,22 @@ void drawHist(String name, Mat src){
 
 Mat canBangHistogram(Mat &imageSrc){
 	Mat imageHsv, imageDst;
+
 	cvtColor(imageSrc, imageHsv, CV_BGR2HLS);
+
 	vector<Mat> hsvChannels;
 	// Tách imageHsv thành 3 kênh màu
 	split(imageHsv, hsvChannels);
+
 	// Cân bằng histogram kênh màu v (Value)
 	equalizeHist(hsvChannels[2], hsvChannels[2]);
+
 	// Trộn ảnh
 	merge(hsvChannels, imageHsv);
+
 	// Chuyển đổi HSV sang RGB để hiển thị
 	cvtColor(imageHsv, imageDst, CV_HLS2BGR);
+
 	return imageDst;
 }
 
@@ -415,7 +421,7 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 void waitStartProgress(MyImage m){
 	while (flagOn != 1){
 		m.cap >> m.src;
-		//video.write(m.src);
+		video.write(m.src);
 		convertCamera(m.src);
 		MyRoi roiStart(Point(m.src.cols - 80, 0), Point(m.src.cols, 80), m.src);
 		vector <MyRoi> roi7;
@@ -444,7 +450,7 @@ void waitStartProgress(MyImage m){
 void waitForPalmCover(MyImage *m){
 
 	m->cap >> m->src; // truyen anh tu camera vao;
-	//video.write(m->src);
+	video.write(m->src);
 	convertCamera(m->src);
 	mySelection.x = Point(m->src.cols / 4 - 40, m->src.rows / 2).x;
 	mySelection.y = Point(m->src.cols / 3 - 40, m->src.rows / 6).y;
@@ -461,7 +467,7 @@ void waitForPalmCover(MyImage *m){
 
 	for (int i = 0; i < 30; i++){
 		m->cap >> m->src;
-		//video.write(m->src);
+		video.write(m->src);
 		convertCamera(m->src);
 		for (int j = 0; j < NSAMPLES; j++){
 			roi[j].drawRect(m->src);
@@ -498,21 +504,21 @@ void getAvgColor(MyRoi roi, int avg[3]){
 	vector<int> lm;
 	// generate vectors
 	// truyền lần lượt các giá trị của H L S vào 
-	//for (int i = 2; i < r.rows - 2; i++){
-	//	for (int j = 2; j < r.cols - 2; j++){
-	//		hm.push_back(r.data[r.channels()*(r.cols*i + j) + 0]);
-	//		sm.push_back(r.data[r.channels()*(r.cols*i + j) + 1]);
-	//		lm.push_back(r.data[r.channels()*(r.cols*i + j) + 2]);
-	//	}
-	//}
-	for (int i = 0; i < r.rows; i++){
-		for (int j = 0; j < r.cols; j++){
-			Vec3b hsl = r.at<Vec3b>(i, j);
-			hm.push_back(hsl.val[0]);
-			sm.push_back(hsl.val[1]);
-			lm.push_back(hsl.val[2]);
+	for (int i = 2; i < r.rows - 2; i++){
+		for (int j = 2; j < r.cols - 2; j++){
+			hm.push_back(r.data[r.channels()*(r.cols*i + j) + 0]);
+			sm.push_back(r.data[r.channels()*(r.cols*i + j) + 1]);
+			lm.push_back(r.data[r.channels()*(r.cols*i + j) + 2]);
 		}
 	}
+	//for (int i = 0; i < r.rows; i++){
+	//	for (int j = 0; j < r.cols; j++){
+	//		Vec3b hsl = r.at<Vec3b>(i, j);
+	//		hm.push_back(hsl.val[0]);
+	//		sm.push_back(hsl.val[1]);
+	//		lm.push_back(hsl.val[2]);
+	//	}
+	//}
 	//int H = hsv.val[0]; //hue
 	//int S = hsv.val[1]; //saturation
 	//int V = hsv.val[2]; //value
@@ -526,11 +532,11 @@ void getAvgColor(MyRoi roi, int avg[3]){
 // khi tính toán xong 7 ô sẽ chuyển sang màu trắng
 void average(MyImage *m){
 	m->cap >> m->src;
-	//video.write(m->src);
+	video.write(m->src);
 	convertCamera(m->src);
 	for (int i = 0; i < 10; i++){
 		m->cap >> m->src;
-		//video.write(m->src);
+		video.write(m->src);
 		convertCamera(m->src);
 		cvtColor(m->src, m->src, CV_BGR2HLS);// chuyển từ RGB sang HLS để tách ra tham số HLS // cho doi mau cua o tu xanh la thanh trang
 		for (int j = 0; j < NSAMPLES; j++){
@@ -564,14 +570,23 @@ void inittrackbar(MyImage &m){
 	}
 	threshold_bar_static = 150;
 	threshold_bar_dynamic = 10;
+	threshold_canny = 80;
+	threshold_diff = 30.0f;
+	m.B = m.cap.get(CV_CAP_PROP_BRIGHTNESS);
+	m.C = m.cap.get(CV_CAP_PROP_CONTRAST);
+	m.S = m.cap.get(CV_CAP_PROP_SATURATION);
 	createTrackbar("H-Upper", "trackbar_n", &c_upper[0][0], 180);
 	createTrackbar("H-Lower", "trackbar_n", &c_lower[0][0], 180);
 	createTrackbar("S-Upper", "trackbar_n", &c_upper[0][1], 255);
 	createTrackbar("S-Lower", "trackbar_n", &c_lower[0][1], 255);
 	createTrackbar("L-Upper", "trackbar_n", &c_upper[0][2], 255);
 	createTrackbar("L-Lower", "trackbar_n", &c_lower[0][2], 255);
+	//createTrackbar("Threshold canny", "trackbar_n", &threshold_canny, 100);
 	createTrackbar("Thstatic", "trackbar_n", &threshold_bar_static, 255);
 	createTrackbar("Thdynamic", "trackbar_n", &threshold_bar_dynamic, 255);
+	createTrackbar("Brightness ", "trackbar_n", &m.B, 100);
+	createTrackbar("Contrast ", "trackbar_n", &m.C, 100);
+	createTrackbar("Saturation ", "trackbar_n", &m.S, 100);
 }
 //tiêu chuẩn màu sắc
 void normalizeColors(){
@@ -883,6 +898,23 @@ Rect camShiftDemo(Mat &src, Mat &imageHLS, Mat& maskHLS, Mat &hue, Mat &hist, co
 	}
 	rectangle(src, trackWindow, Scalar(216, 220, 15), 2, 8);
 	return trackWindow;
+	//int angle = trackBox.angle;
+	//Size rect_size = trackBox.size;
+	//if (angle >90){
+	//	angle -= 180;
+	//	angle *= -1;
+	//}
+	//Mat M = getRotationMatrix2D(trackBox.center, angle, 1.0);
+	//Mat rotatedMask;
+	//Mat croppedMask;
+	//warpAffine(backproj, rotatedMask, M, backproj.size(), INTER_CUBIC);
+	//getRectSubPix(rotatedMask, rect_size, trackBox.center, croppedMask);
+	//threshold(croppedMask, croppedMask,150, 255, THRESH_BINARY);
+	//Point sh;
+	//sh.x = (trackWindow.br().x + trackWindow.tl().x) / 2;
+	//sh.y = (trackWindow.br().y + trackWindow.tl().y) / 2;
+	//putText(src, "Hand", Point(sh), FONT_HERSHEY_PLAIN, 1.0f, Scalar(0, 200, 0), 2);
+	//ellipse(src, trackBox, Scalar(0,200,0), 2, CV_AA);
 }
 
 //void imadjust(const Mat& src, Mat& dst, int tol = 1, Vec2i in = Vec2i(0, 255), Vec2i out = Vec2i(0, 255))
@@ -1079,7 +1111,7 @@ int main()
 		Shape sh;
 		HandGesture hg1;
 		m.cap >> m.src; // chuyen anh tu cam qua anh nguon
-		//video.write(m.src);
+		video.write(m.src);
 		//lay anh nen background
 		Mat framePrev;
 		framePrev = returnImagePrev(m.cap);
@@ -1092,7 +1124,7 @@ int main()
 		//chờ nhận mẫu màu từ lòng bàn tay
 
 		m.cap >> m.src;
-		//video.write(m.src);
+		video.write(m.src);
 		waitForPalmCover(&m);
 
 		//tinh toan HLS
@@ -1124,10 +1156,10 @@ int main()
 		int flagC = 1;
 		int flagLC = 1;
 
+		//int xcc, ycc,xc,yc;
+		//xcc = ycc = xc=yc=0;
 		////////////////////////////////////////////////
-#ifdef __linux__ 
 
-#else
 		Rect trackWindow;
 		int hsize = 16;
 		float hranges[] = { 0, 180 };
@@ -1135,7 +1167,7 @@ int main()
 		Mat hue, hist;
 		bool flagCam = true;
 		mySelection &= Rect(0, 0, 320, 240);
-#endif
+
 		////////////////////////////////////////////////
 		time_t t_start;
 		time_t t_stop;
@@ -1145,36 +1177,7 @@ int main()
 		time_t t_hand_start;
 		time_t t_hand_stop;
 		Rect boxCheckHand(0,0,0,0);
-
-#ifdef __linux__
-		m.cap >> m.src;
-		convertCamera(m.src);
-		string trackerTypes[6] = {"BOOSTING", "MIL", "KCF", "TLD","MEDIANFLOW", "GOTURN"};
-		string trackerType = trackerTypes[2];
-		Ptr<Tracker> tracker;
-#if (CV_MINOR_VERSION < 3)
-		{
-			tracker = Tracker::create(trackerType);
-		}
-#else
-		{
-			if (trackerType == "BOOSTING")
-				tracker = TrackerBoosting::create();
-			if (trackerType == "MIL")
-				tracker = TrackerMIL::create();
-			if (trackerType == "KCF")
-				tracker = TrackerKCF::create();
-			if (trackerType == "TLD")
-				tracker = TrackerTLD::create();
-			if (trackerType == "MEDIANFLOW")
-				tracker = TrackerMedianFlow::create();
-			if (trackerType == "GOTURN")
-				tracker = TrackerGOTURN::create();
-		}
-#endif
-		mySelection = selectROI(m.src, false);
-		tracker->init(m.src, bbox); 
-#endif
+		//imshow("background", framePrev);
 		while (1){
 			hg1.frameNumber++;
 
@@ -1224,36 +1227,47 @@ int main()
 				return 0;
 			}
 			m.cap >> m.src;
-			//video.write(m.src);
+			video.write(m.src);
 			convertCamera(m.src);
 			m.src.copyTo(m.srcLR);
+			//imshow("Current Image",m.src);
 			if (flag0){
 				m.srcLR = returnSubBackgroundDynamic(bg_model, m.src);
 			}
 			else{
 				destroyWindow("mean background image");
 			}
+
 			if (flag1){
 				Mat copyMat;
 				m.srcLR = returnSubBackgroundStatic(m.src, framePrev, boxCheckHand);
+				//m.srcLR.copyTo(copyMat);
+				//cvtColor(copyMat, copyMat, CV_BGR2GRAY);
+				//GaussianBlur(copyMat, copyMat, Size(11, 11), 3.5, 3.5, 4);
+				//threshold(copyMat, copyMat, threshold_bar_dynamic, 255, THRESH_BINARY);
+				//imshow("cp", copyMat); 
 			}
 			if (flag2){
 				framePrev = returnImagePrev(m.cap);
 				flag2 = !flag2;
 			}
+
 			if (flag3){
+				//m.srcLR = returnImAdjust(m.srcLR);
 				m.srcLR = canBangHistogram(m.srcLR);
 				imshow("CanBangHistogram", m.srcLR);
 			}
 			else{
 				cvDestroyWindow("CanBangHistogram");
 			}
+
 			if (flag4){
 				drawHist("Histogram", m.srcLR);
 			}
 			else{
 				cvDestroyWindow("Histogram");
 			}
+
 			if (flag5){
 				per = returnPercentDiff(framePrev, m.src);
 				per = per * 100;
@@ -1262,27 +1276,20 @@ int main()
 					framePrev = returnImagePrev(m.cap);
 				}
 			}
+
 			pyrDown(m.srcLR, m.srcLR);
 			blur(m.srcLR, m.srcLR, Size(3, 3));
+			//chuyển đổi màu của ảnh đó sang HLS
 			cvtColor(m.srcLR, m.srcLR, ORIGCOL2COL);
+			//tạo ảnh nhị phân hiển thị màu cùng với màu da
 			produceBinaries(&m);
 			pyrUp(m.bw, m.bw);
 			pyrUp(m.srcLR, m.srcLR);
-#ifdef __linux__
-			bool ok = tracker->update(m.src, mySelection);
-			Mat cp;
-			m.src.copyTo(cp);
-			if (ok)
-			{
-				// Tracking success : Draw the tracked object
-				rectangle(cp, mySelection, Scalar(255, 0, 0), 2, 1);
-				imshow("ccc", cp);
-			}
-#else
 			boxCheckHand = camShiftDemo(m.src, m.srcLR, m.bw, hue, hist, phranges, hsize, trackWindow, flagCam);
-#endif
+			//chuyển lại ảnh 1 nửa thành màu RGB lại
 			cvtColor(m.srcLR, m.srcLR, COL2ORIGCOL);
 			makeContours(m.src, m.bw, &sh, &hg1, boxCheckHand);
+			////////////////////////////////////////////////////////
 
 			if (flag6){
 #ifdef __linux__
@@ -1297,6 +1304,14 @@ int main()
 				controlCursor(flagC, flagLC, xx, yy, xcu, ycu, hg1);
 				xcu = xx;
 				ycu = yy;
+
+				//if (hg1.mostFrequentFingerNumber != 0 ){
+				//	xc = hg1.getPointHighest().x;
+				//	yc = hg1.getPointHighest().y;
+				//	drawRectCursor(m.src, m.bw, xc, yc, xcc, ycc);
+				//	xcc = xc;
+				//	ycc = yc;
+				//}
 #endif
 			}
 			if (hg1.isHand){
@@ -1364,7 +1379,7 @@ int main()
 		destroyAllWindows();
 	}
 	m.cap.release();
-	//video.release();
+	video.release();
 	return 0;
 }
 
