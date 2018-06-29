@@ -191,7 +191,6 @@ class Player : public QThread
     void mouseCtrlShow(int ctrl);
     void videoStop(bool flagVideoStop);
     bool flagVideo = false;
-    bool flagPause = false;
     String fileName;
     String ipComputer = "";
 };

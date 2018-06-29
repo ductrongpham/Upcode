@@ -54,8 +54,6 @@ private slots:
 
     void clearWindows();
 
-    void on_pause_btn_clicked();
-
 private:
     Ui::MainWindow *ui;
     Player* myPlayer;

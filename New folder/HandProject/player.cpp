@@ -1,5 +1,5 @@
 #include "player.hpp"
-bool flagvideo1 = false;
+
 //_________________________________________________________________________________
 #ifdef __linux__
 void Player::msleep(int ms){
@@ -14,7 +14,7 @@ void Player::WaitKeyOS(int ms){
     nanosleep(&ts, NULL);
 #else
     if(flagVideo){
-        Sleep(ms+20);
+        Sleep(ms);
     }else{
         waitKey(ms);
     }
@@ -190,7 +190,9 @@ void Player::waitStartProgress(MyImage m){
         for (int j = 0; j < NSAMPLES; j++){
             roi7[j].drawRect(m.src);
         }
+//        imshow("Wait", m.src);
         imShow(m.src);
+//        if (cv::waitKey(30) == char('q')) break;
         WaitKeyOS(30);
         if(flagClose){
             break;
@@ -201,12 +203,7 @@ void Player::waitStartProgress(MyImage m){
 
 void Player::convertCamera(Mat &image){
 #ifdef __linux__
-    if(flagvideo1){
-        flip(image, image, 1);
-    }else{
-        flip(image,image,0);
-    }
-
+    flip(image, image, 1);
 #else
     flip(image, image, 1);
 #endif
@@ -226,19 +223,20 @@ Mat Player::returnImagePrev(VideoCapture cap){
             putText(src, "Sample image", Point(src.cols / 5, src.rows / 2), FONT_HERSHEY_PLAIN, 1.5f, Scalar(191, 178, 0), 2);
         }
         if (i == 20){
-            cap.grab();
             cap >> framePrev;
+            //video.write(framePrev);
             convertCamera(framePrev);
-            imshow("background of video",framePrev);
         }
         imShow(src);
+//        if (cv::waitKey(30) == char('q')) break;
         WaitKeyOS(30);
     }
+//    destroyWindow("Sample Image");
     return framePrev;
 }
 void Player::waitForPalmCover(MyImage *m){
 
-    m->cap >> m->src;
+    m->cap >> m->src; // truyen anh tu camera vao;
     convertCamera(m->src);
 
     mySelection.x = Point(m->src.cols / 4 - 40, m->src.rows / 2).x;
@@ -265,6 +263,7 @@ void Player::waitForPalmCover(MyImage *m){
         string imgText = string("Cover rectangles with palm");
         printText(m->src, imgText);
         imShow(m->src);
+//        if (cv::waitKey(30) >= 0) break;
         WaitKeyOS(30);
     }
 }
@@ -364,6 +363,7 @@ void Player::average(MyImage *m){
         string imgText = string("Finding average color of hand");
         printText(m->src, imgText);
         imShow(m->src);
+//        if (cv::waitKey(30) >= 0) break;
         WaitKeyOS(30);
     }
 }
@@ -662,12 +662,22 @@ Mat Player::returnSubBackgroundStatic(Mat frameCurrent, Mat framePrev,Rect box){
 }
 Mat Player::canBangHistogram(Mat &imageSrc){
     Mat imageHsv, imageDst;
+
     cvtColor(imageSrc, imageHsv, CV_BGR2HSV);
+
     vector<Mat> hsvChannels;
+    // Tách imageHsv thành 3 kênh màu
     split(imageHsv, hsvChannels);
+
+    // Cân bằng histogram kênh màu v (Value)
     equalizeHist(hsvChannels[2], hsvChannels[2]);
+
+    // Trộn ảnh
     merge(hsvChannels, imageHsv);
+
+    // Chuyển đổi HSV sang RGB để hiển thị
     cvtColor(imageHsv, imageDst, CV_HSV2BGR);
+
     return imageDst;
 }
 void Player::drawHist(String name, Mat src){
@@ -972,7 +982,7 @@ void Player::run()
         struct sockaddr_in serv;
         serv.sin_family = AF_INET;
         serv.sin_port = htons(2222);
-        serv.sin_addr.s_addr = inet_addr(ipComputer.c_str());
+        serv.sin_addr.s_addr = inet_addr(ipComputer);
         socklen_t m_server = sizeof(serv);
         struct PointCenter pointCenter;
 #endif
@@ -982,8 +992,6 @@ void Player::run()
        MyImage m;
        if(flagVideo){
            m.setCam(fileName);
-           flagvideo1 = true;
-           percentShow(0,m.cap.get(CV_CAP_PROP_FPS));
        }else{
            m.setCam(0);
        }
@@ -992,8 +1000,8 @@ void Player::run()
             square_len = 15;
             Shape sh;
             HandGesture hg1;
-
             m.cap >> m.src;
+
             if(flagVideo){
                 WaitKeyOS(30);
             }
@@ -1005,8 +1013,8 @@ void Player::run()
             waitStartProgress(m);
             flagOn = 0;
             if(flagClose) break;
-
             m.cap >> m.src;
+
             if(flagVideo){
                 WaitKeyOS(30);
             }
@@ -1041,7 +1049,6 @@ void Player::run()
             Rect boxCheckHand(0,0,0,0);
             flagVideo = false;
             while(1){
-
                 resetProcess = -1;
                 hg1.frameNumber++;
     //            waitKey(5);
@@ -1049,7 +1056,6 @@ void Player::run()
                 m.cap >> m.src;
                 if (m.src.empty()){
                     flagVideo = false;
-                    flagvideo1 = false;
                     flagClose = true;
                     videoStop(true);
                     break;
@@ -1081,6 +1087,9 @@ void Player::run()
                 if (flag4){
                     per = returnPercentDiff(framePrev, m.src);
                     per = per * 100;
+//                    if (per < 30.0f){
+//                        framePrev = returnImagePrev(m.cap);
+//                    }
                 }
                 pyrDown(m.srcLR, m.srcLR);
                 blur(m.srcLR, m.srcLR, Size(3, 3));
@@ -1134,11 +1143,6 @@ void Player::run()
                         mouseCtrlShow(5);
                         flagLC1 = 1;
                     }
-
-                    if (hg1.mostFrequentFingerNumber == 0 && hg1.isHand){
-                        mouseCtrlShow(0);
-                    }
-
 
                     xcu = xx;
                     ycu = yy;
@@ -1195,13 +1199,6 @@ void Player::run()
     #endif
                 numShow(hg1.mostFrequentFingerNumber);
                 showWindows(m.src, m.bw);
-
-                if(flagPause){
-                    while(1){
-                        if(!flagPause) break;
-                    }
-                }
-
                 if(flagClose){
                     break;
                 }

@@ -349,18 +349,7 @@ vector<Point> HandGesture::getFingerTips(Mat src){
         }
     }
 
-    Point pt;
-    vector<Point> np;
-    for (int i = 0; i < fingerTipsTest.size(); i++){
-        pt = fingerTipsTest[i];
-        if (pt.y > (bRect.br().y - 0.2*bRect_height)){
-        }
-        else{
-            np.push_back(pt);
-        }
-    }
-
-    fingerTips.swap(np);
+    fingerTips.swap(fingerTipsTest);
 
     if (fingerTips.size() == 1){
         fingerTips.clear();

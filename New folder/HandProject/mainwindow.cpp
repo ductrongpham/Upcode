@@ -108,7 +108,6 @@ void MainWindow::updateMouseCtrl(int ctrl)
         case 1:ui->mouse_ctrl_lbl->setText("---MOVE---");break;
         case 4:ui->mouse_ctrl_lbl->setText("Click Right");break;
         case 5:ui->mouse_ctrl_lbl->setText("Long Click");break;
-        case 0:ui->mouse_ctrl_lbl->setText("---0---");break;
     }
 }
 
@@ -184,7 +183,6 @@ void MainWindow::on_start_program_btn_clicked()
 {
     if (myPlayer->isStopped())
     {
-
         myPlayer->ipComputer = ui->text_ip->toPlainText().toStdString();
         myPlayer->Play();
         myPlayer->flagClose = false;
@@ -192,10 +190,6 @@ void MainWindow::on_start_program_btn_clicked()
     }
     else
     {
-        if(myPlayer->flagPause){
-            ui->pause_btn->setText(tr("Pause"));
-            myPlayer->flagPause = false;
-        }
         myPlayer->Stop();
         myPlayer->flagClose = true;
         myPlayer->resetProcess = 0;
@@ -210,10 +204,6 @@ void MainWindow::on_start_program_btn_clicked()
 void MainWindow::on_start_process_btn_clicked()
 {
     if(myPlayer->isReseted() == (-1)){
-        if(myPlayer->flagPause){
-            ui->pause_btn->setText(tr("Pause"));
-            myPlayer->flagPause = false;
-        }
         clearWindows();
         myPlayer->flagOn = 0;
         myPlayer->flagReset = true;
@@ -258,15 +248,9 @@ void MainWindow::on_waitkey_sl_valueChanged(int value)
     myPlayer->time_wait = value;
 }
 
-void MainWindow::on_waitkey_sl_actionTriggered(int action)
-{
-
-}
-
-
 void MainWindow::on_waitkey_sl_sliderMoved(int position)
 {
-    ui->value_slider_lbl->setText(QString::number(position));
+    ui->value_slider_lbl->setText("Value : "+ QString::number(position));
 }
 
 void MainWindow::clearWindows(){
@@ -277,19 +261,5 @@ void MainWindow::clearWindows(){
     ui->ctrl_mouse_lbl->setPixmap(pm_black);
     ui->ctrl_arrow_lbl->setPixmap(pm_black);
     ui->img_lbl->setPixmap(pm_black);
-}
-
-
-void MainWindow::on_pause_btn_clicked()
-{
-    if(myPlayer->isReseted() == (-1)){
-        if(myPlayer->flagPause == false){
-            ui->pause_btn->setText(tr("Replay"));
-            myPlayer->flagPause = true;
-        }else{
-            ui->pause_btn->setText(tr("Pause"));
-            myPlayer->flagPause = false;
-        }
-    }
 }
 

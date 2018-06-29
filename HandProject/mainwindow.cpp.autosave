@@ -258,12 +258,6 @@ void MainWindow::on_waitkey_sl_valueChanged(int value)
     myPlayer->time_wait = value;
 }
 
-void MainWindow::on_waitkey_sl_actionTriggered(int action)
-{
-
-}
-
-
 void MainWindow::on_waitkey_sl_sliderMoved(int position)
 {
     ui->value_slider_lbl->setText(QString::number(position));

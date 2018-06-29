@@ -63,7 +63,6 @@ public:
     QLabel *label_7;
     QLabel *label_8;
     QLabel *mouse_ctrl_lbl;
-    QPushButton *pause_btn;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -126,7 +125,7 @@ public:
         label_3->setStyleSheet(QStringLiteral("font: 14pt \"Times New Roman\";"));
         change_bg_btn = new QPushButton(centralWidget);
         change_bg_btn->setObjectName(QStringLiteral("change_bg_btn"));
-        change_bg_btn->setGeometry(QRect(390, 310, 100, 31));
+        change_bg_btn->setGeometry(QRect(340, 310, 100, 31));
         change_bg_btn->setStyleSheet(QLatin1String("border: 2px solid #222222;\n"
 "border-radius: 10px;\n"
 ""));
@@ -152,7 +151,7 @@ public:
 ""));
         start_process_btn = new QPushButton(centralWidget);
         start_process_btn->setObjectName(QStringLiteral("start_process_btn"));
-        start_process_btn->setGeometry(QRect(280, 310, 100, 31));
+        start_process_btn->setGeometry(QRect(230, 310, 100, 31));
         start_process_btn->setStyleSheet(QLatin1String("border: 2px solid #222222;\n"
 "border-radius: 10px;\n"
 ""));
@@ -221,8 +220,7 @@ public:
         waitkey_sl->setTickInterval(0);
         value_slider_lbl = new QLabel(centralWidget);
         value_slider_lbl->setObjectName(QStringLiteral("value_slider_lbl"));
-        value_slider_lbl->setGeometry(QRect(420, 260, 41, 20));
-        value_slider_lbl->setAlignment(Qt::AlignCenter);
+        value_slider_lbl->setGeometry(QRect(420, 260, 61, 20));
         text_ip = new QTextEdit(centralWidget);
         text_ip->setObjectName(QStringLiteral("text_ip"));
         text_ip->setGeometry(QRect(340, 220, 141, 31));
@@ -249,11 +247,6 @@ public:
         mouse_ctrl_lbl->setFont(font1);
         mouse_ctrl_lbl->setStyleSheet(QStringLiteral("color: rgb(255, 0, 0);"));
         mouse_ctrl_lbl->setAlignment(Qt::AlignCenter);
-        pause_btn = new QPushButton(centralWidget);
-        pause_btn->setObjectName(QStringLiteral("pause_btn"));
-        pause_btn->setGeometry(QRect(230, 310, 41, 31));
-        pause_btn->setStyleSheet(QLatin1String("border: 2px solid #222222;\n"
-"border-radius: 10px;"));
         MainWindow->setCentralWidget(centralWidget);
         layoutWidget->raise();
         label_5->raise();
@@ -280,7 +273,6 @@ public:
         label_7->raise();
         label_8->raise();
         mouse_ctrl_lbl->raise();
-        pause_btn->raise();
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
         MainWindow->addToolBar(Qt::TopToolBarArea, mainToolBar);
@@ -319,12 +311,11 @@ public:
         ctrl_arrow_cb->setText(QApplication::translate("MainWindow", "Control Arrow Key", 0));
         hand_lbl->setText(QApplication::translate("MainWindow", "---o---", 0));
         print_num_finger_lbl->setText(QApplication::translate("MainWindow", "n", 0));
-        value_slider_lbl->setText(QApplication::translate("MainWindow", "5", 0));
+        value_slider_lbl->setText(QApplication::translate("MainWindow", "Value: 5", 0));
         label_6->setText(QApplication::translate("MainWindow", "IP Server:", 0));
         label_7->setText(QApplication::translate("MainWindow", "Finger Number", 0));
-        label_8->setText(QApplication::translate("MainWindow", "Time sleep(ms):", 0));
+        label_8->setText(QApplication::translate("MainWindow", "Time sleep(ms)", 0));
         mouse_ctrl_lbl->setText(QApplication::translate("MainWindow", "---0---", 0));
-        pause_btn->setText(QApplication::translate("MainWindow", "Pause", 0));
     } // retranslateUi
 
 };
