@@ -229,7 +229,6 @@ Mat Player::returnImagePrev(VideoCapture cap){
             cap.grab();
             cap >> framePrev;
             convertCamera(framePrev);
-            imshow("background of video",framePrev);
         }
         imShow(src);
         WaitKeyOS(30);
@@ -300,12 +299,12 @@ Rect Player::camShiftDemo(Mat &src, Mat &imageHLS, Mat& maskHLS, Mat &hue, Mat &
     calcBackProject(&hue, 1, 0, hist, backproj, &phranges);
     backproj &= maskHLS;
     CamShift(backproj, trackWindow, TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1));
-    if (trackWindow.area() <= 1)
+    if (trackWindow.area() <= 1|| trackWindow.area() < 3200)
     {
         int cols = backproj.cols;
         int rows = backproj.rows;
         int r = (MIN(cols, rows) + 5) / 6;
-        trackWindow = Rect(trackWindow.x - r, trackWindow.y - r, trackWindow.x + r, trackWindow.y + r) & Rect(0, 0, cols, rows);
+        trackWindow = Rect(abs(trackWindow.x - r), abs(trackWindow.y - r), trackWindow.x + r, trackWindow.y + r) & Rect(0, 0, cols, rows);
     }
     Rect window(Point(trackWindow.tl().x - 40, trackWindow.tl().y - 40), Point(trackWindow.br().x + 40, trackWindow.br().y + 40));
     rectangle(src, trackWindow, Scalar(216, 220, 15), 2, 8);

@@ -236,6 +236,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_browser_btn_clicked()
 {
+    if(myPlayer->flagPause){
+        ui->pause_btn->setText(tr("Pause"));
+        myPlayer->flagPause = false;
+    }
     myPlayer->Stop();
     myPlayer->flagClose = true;
     myPlayer->resetProcess = 0;
@@ -257,12 +261,6 @@ void MainWindow::on_waitkey_sl_valueChanged(int value)
 {
     myPlayer->time_wait = value;
 }
-
-void MainWindow::on_waitkey_sl_actionTriggered(int action)
-{
-
-}
-
 
 void MainWindow::on_waitkey_sl_sliderMoved(int position)
 {
